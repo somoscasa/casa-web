@@ -1743,6 +1743,52 @@ button {
   word-break: break-all;
   color: var(--pergamino);
 }
+
+.adm-code-box {
+  background: var(--ebano);
+  color: var(--pergamino);
+  padding: 36px 32px 30px;
+  margin-bottom: 40px;
+  text-align: center;
+}
+.adm-code-box .label { color: var(--ceniza); margin-bottom: 14px; }
+.adm-code {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 96px;
+  line-height: 1;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  color: var(--pergamino);
+  margin: 4px 0 18px;
+  user-select: all;
+}
+.adm-code-hint {
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px;
+  color: var(--ceniza);
+  margin: 0;
+}
+.adm-code-hint a {
+  color: var(--siena);
+  text-decoration: none;
+}
+.adm-code-hint a:hover { text-decoration: underline; }
+.adm-code-link {
+  margin-top: 18px;
+  text-align: left;
+}
+.adm-code-link summary {
+  font-family: "DM Sans", sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ceniza);
+  cursor: pointer;
+  list-style: none;
+}
+.adm-code-link summary::-webkit-details-marker { display: none; }
+.adm-code-link summary::before { content: "→  "; color: var(--siena); }
+.adm-code-link[open] summary::before { content: "↓  "; }
 .adm-uploader { margin: 40px 0; }
 .adm-drop {
   display: flex;

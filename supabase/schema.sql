@@ -28,12 +28,35 @@ create table if not exists events (
 );
 
 -- Galerías
+-- Generador de códigos únicos de 4 dígitos (1000–9999) para galleries.access_token.
+-- Reintenta si el código aleatorio ya está tomado.
+create or replace function generate_unique_access_token()
+returns text
+language plpgsql
+as $$
+declare
+  new_code text;
+  attempt int := 0;
+begin
+  loop
+    new_code := lpad((1000 + floor(random() * 9000))::text, 4, '0');
+    if not exists (select 1 from galleries where access_token = new_code) then
+      return new_code;
+    end if;
+    attempt := attempt + 1;
+    if attempt >= 100 then
+      raise exception 'No quedan códigos de 4 dígitos disponibles';
+    end if;
+  end loop;
+end;
+$$;
+
 create table if not exists galleries (
   id uuid primary key default gen_random_uuid(),
   event_id uuid references events(id) on delete cascade,
   client_id uuid references clients(id) on delete cascade,
   title text,
-  access_token text unique default gen_random_uuid()::text,
+  access_token text unique default generate_unique_access_token(),
   is_active boolean default true,
   created_at timestamptz default now()
 );

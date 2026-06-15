@@ -72,11 +72,26 @@ export default async function GalleryDetail({
             </div>
           </header>
 
-          <section className="adm-link-box">
-            <div className="label">Link privado para tu cliente</div>
-            <div className="adm-link-copy">
-              <code>{clientLink}</code>
-            </div>
+          <section className="adm-code-box">
+            <div className="label">Código privado de tu cliente</div>
+            <div className="adm-code">{g.access_token}</div>
+            <p className="adm-code-hint">
+              Compartilo con tu cliente. Lo ingresa en{" "}
+              <a
+                href={`${origin}/clientes`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {origin.replace(/^https?:\/\//, "")}/clientes
+              </a>
+              .
+            </p>
+            <details className="adm-code-link">
+              <summary>O mandale el link directo</summary>
+              <div className="adm-link-copy">
+                <code>{clientLink}</code>
+              </div>
+            </details>
           </section>
 
           <GalleryUploader galleryId={params.id} existingCount={photos.length} />
