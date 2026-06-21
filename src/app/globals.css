@@ -2904,7 +2904,7 @@ input[type="date"].adm-input { cursor: pointer; }
 .adm-dash { margin-bottom: 16px; }
 .adm-dash-tiles {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 14px;
   margin-bottom: 40px;
 }
@@ -3076,4 +3076,165 @@ input[type="date"].adm-input { cursor: pointer; }
   .adm-dash-ev-date { width: auto; }
   .adm-cli-ev, .adm-cli-gal, .adm-cli-ord { flex-direction: column; align-items: flex-start; gap: 12px; }
   .adm-cli-ev-pay { align-items: flex-start; }
+}
+
+/* ───────────────────────── Embudo de reservas ───────────────────────── */
+.emb-board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.emb-col {
+  background: #fff;
+  border: 1px solid var(--ceniza-line);
+  min-width: 0;
+}
+.emb-col-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--ceniza-line);
+}
+.emb-col-title { color: var(--ebano); }
+.emb-col-count {
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  color: var(--pergamino);
+  background: var(--ebano);
+  min-width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
+}
+.emb-col-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 72px;
+}
+.emb-col-empty { color: var(--ceniza); text-align: center; padding: 12px 0; }
+
+.emb-card {
+  border: 1px solid var(--ceniza-line);
+  background: var(--pergamino);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: opacity 0.15s ease;
+}
+.emb-card-busy { opacity: 0.5; pointer-events: none; }
+.emb-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.emb-card-name { font-size: 19px; line-height: 1.15; color: var(--ebano); }
+.emb-card-link { text-decoration: none; color: var(--ceniza); font-size: 14px; flex-shrink: 0; }
+.emb-card-link:hover { color: var(--siena); }
+.emb-card-meta { color: var(--ceniza); text-transform: none; letter-spacing: 0; line-height: 1.4; }
+.emb-card-pay { align-self: flex-start; }
+
+.emb-notes {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ebano);
+  text-align: left;
+  background: none;
+  border: none;
+  border-top: 1px dashed var(--ceniza-line);
+  padding: 8px 0 0;
+  cursor: pointer;
+  width: 100%;
+}
+.emb-notes:hover { color: var(--siena); }
+.emb-notes-empty {
+  color: var(--ceniza);
+  font-style: normal;
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+}
+.emb-notes-edit { display: flex; flex-direction: column; gap: 8px; }
+.emb-notes-input {
+  width: 100%;
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px;
+  padding: 8px 10px;
+  border: 1px solid var(--ceniza-line);
+  background: #fff;
+  color: var(--ebano);
+  resize: vertical;
+}
+.emb-notes-actions { display: flex; gap: 8px; }
+
+.emb-move {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ceniza-line-soft);
+}
+.emb-move .label { color: var(--ceniza); flex-shrink: 0; }
+.emb-select {
+  flex: 1;
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  padding: 6px 8px;
+  border: 1px solid var(--ceniza-line);
+  background: #fff;
+  color: var(--ebano);
+  cursor: pointer;
+}
+
+.emb-newform {
+  width: 100%;
+  margin-top: 8px;
+  border: 1px solid var(--ceniza-line);
+  background: #fff;
+  padding: 16px;
+}
+.emb-newform-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.emb-input {
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px;
+  padding: 9px 11px;
+  border: 1px solid var(--ceniza-line);
+  background: var(--pergamino);
+  color: var(--ebano);
+  width: 100%;
+}
+.emb-newform-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+.emb-perdidas { margin-top: 44px; }
+.emb-perdidas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+  opacity: 0.72;
+}
+
+@media (max-width: 900px) {
+  .emb-board {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 78%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 8px;
+  }
+  .emb-col { scroll-snap-align: start; }
+  .emb-newform-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+  .emb-board { grid-auto-columns: 88%; }
+  .emb-newform-grid { grid-template-columns: 1fr; }
 }

@@ -4,7 +4,13 @@ import { getServerSupabase, supabaseConfigured } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { formatARS } from "@/lib/gallery-shop";
-import { isPaid, packageName, payLabel, formatDate } from "@/lib/crm";
+import {
+  isPaid,
+  packageName,
+  payLabel,
+  formatDate,
+  normalizeStage,
+} from "@/lib/crm";
 
 type GalleryRow = {
   id: string;
@@ -64,7 +70,7 @@ export default async function AdminHome() {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  const [galRes, upRes, bookRes, ordRes, cliCntRes, galActiveRes] =
+  const [galRes, upRes, bookRes, ordRes, cliCntRes, galActiveRes, evStatusRes] =
     await Promise.all([
       supabase
         .from("galleries")
@@ -89,6 +95,7 @@ export default async function AdminHome() {
         .from("galleries")
         .select("id", { count: "exact", head: true })
         .eq("is_active", true),
+      supabase.from("events").select("status"),
     ]);
 
   const galleries: GalleryRow[] = (galRes.data as unknown as GalleryRow[]) ?? [];
@@ -108,6 +115,14 @@ export default async function AdminHome() {
   ).length;
   const clientesCount = cliCntRes.count ?? 0;
   const galeriasActivas = galActiveRes.count ?? 0;
+
+  // Consultas activas = leads en el pipeline que todavía no se fotografiaron.
+  const evStatuses =
+    (evStatusRes.data as { status: string | null }[] | null) ?? [];
+  const consultasActivas = evStatuses.filter((e) => {
+    const s = normalizeStage(e.status);
+    return s === "consulta" || s === "reservada";
+  }).length;
 
   return (
     <>
@@ -131,6 +146,10 @@ export default async function AdminHome() {
                 <span className="serif adm-dash-num">{formatARS(facturado)}</span>
                 <span className="label">facturado</span>
               </div>
+              <Link href="/admin/embudo" className="adm-dash-tile adm-dash-tile-link">
+                <span className="serif adm-dash-num">{consultasActivas}</span>
+                <span className="label">consultas activas</span>
+              </Link>
               <Link href="/admin/clientes" className="adm-dash-tile adm-dash-tile-link">
                 <span className="serif adm-dash-num">{clientesCount}</span>
                 <span className="label">clientes</span>

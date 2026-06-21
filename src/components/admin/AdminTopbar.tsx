@@ -25,6 +25,9 @@ export default function AdminTopbar({ email }: { email: string }) {
         <Link href="/admin" className="adm-link">
           Panel
         </Link>
+        <Link href="/admin/embudo" className="adm-link">
+          Embudo
+        </Link>
         <Link href="/admin/clientes" className="adm-link">
           Clientes
         </Link>

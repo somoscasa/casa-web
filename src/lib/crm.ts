@@ -38,6 +38,63 @@ export function shipLabel(s: string | null | undefined): string {
   return SHIP_LABEL[k] ?? k ?? "—";
 }
 
+/* ───────────────────────── Embudo de reservas ─────────────────────────
+ * El estado del embudo vive en events.status (columna ya existente).
+ * Pipeline lineal: consulta → reservada → fotografiada → entregada.
+ * 'perdida' es una columna de archivo aparte. El legacy 'pendiente' (y
+ * cualquier valor desconocido) se normaliza a 'consulta'.
+ */
+export const STAGES = [
+  "consulta",
+  "reservada",
+  "fotografiada",
+  "entregada",
+  "perdida",
+] as const;
+export type Stage = (typeof STAGES)[number];
+
+/** Columnas del tablero, en orden de embudo. */
+export const PIPELINE: Stage[] = [
+  "consulta",
+  "reservada",
+  "fotografiada",
+  "entregada",
+];
+
+export const STAGE_LABEL: Record<Stage, string> = {
+  consulta: "Consulta",
+  reservada: "Reservada",
+  fotografiada: "Fotografiada",
+  entregada: "Entregada",
+  perdida: "Perdida",
+};
+
+const STAGE_SET = new Set<string>(STAGES);
+
+/** Normaliza cualquier valor de status a un Stage válido (legacy → consulta). */
+export function normalizeStage(s: string | null | undefined): Stage {
+  const k = (s ?? "").toLowerCase();
+  return STAGE_SET.has(k) ? (k as Stage) : "consulta";
+}
+
+export function stageLabel(s: string | null | undefined): string {
+  return STAGE_LABEL[normalizeStage(s)];
+}
+
+/** Siguiente estado en el pipeline lineal (null si ya está al final o es 'perdida'). */
+export function nextStage(s: string | null | undefined): Stage | null {
+  const i = PIPELINE.indexOf(normalizeStage(s));
+  if (i < 0 || i >= PIPELINE.length - 1) return null;
+  return PIPELINE[i + 1];
+}
+
+/** Estado anterior en el pipeline lineal (null si ya está al inicio o es 'perdida'). */
+export function prevStage(s: string | null | undefined): Stage | null {
+  const i = PIPELINE.indexOf(normalizeStage(s));
+  if (i <= 0) return null;
+  return PIPELINE[i - 1];
+}
+
 /** Formato de fecha corto en español-AR. */
 export function formatDate(d: string | null | undefined): string {
   if (!d) return "sin fecha";

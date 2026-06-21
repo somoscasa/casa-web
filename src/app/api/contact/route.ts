@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { supabaseConfigured } from "@/lib/supabase/server";
+import { createLead } from "@/lib/leads";
 
 type Payload = {
   nombre?: string;
@@ -24,6 +26,22 @@ export async function POST(req: Request) {
 
   if (!nombre.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || !tipo) {
     return NextResponse.json({ error: "invalid_payload" }, { status: 400 });
+  }
+
+  // Persistir la consulta en el embudo (best-effort: nunca rompe el envío).
+  if (supabaseConfigured()) {
+    try {
+      await createLead({
+        name: nombre,
+        email,
+        phone: tel,
+        type: tipo,
+        date: fecha || null,
+        notes: msg || null,
+      });
+    } catch (e) {
+      console.error("[contact] no se pudo crear el lead:", e);
+    }
   }
 
   const apiKey = process.env.RESEND_API_KEY;
