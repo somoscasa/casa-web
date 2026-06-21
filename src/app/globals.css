@@ -3238,3 +3238,112 @@ input[type="date"].adm-input { cursor: pointer; }
   .emb-board { grid-auto-columns: 88%; }
   .emb-newform-grid { grid-template-columns: 1fr; }
 }
+
+/* ───────────────────────── Calendario de bodas ───────────────────────── */
+.cal-nav { display: flex; align-items: center; gap: 10px; }
+.cal-navbtn {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--ceniza-line);
+  background: #fff;
+  color: var(--ebano);
+  text-decoration: none;
+  font-size: 16px;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.cal-navbtn:hover { border-color: var(--siena); color: var(--siena); }
+.cal-today-link { color: var(--ceniza); text-decoration: none; padding: 0 6px; }
+.cal-today-link:hover { color: var(--siena); }
+
+.cal-monthbar { display: flex; align-items: baseline; gap: 16px; margin-bottom: 18px; }
+.cal-month { font-size: 28px; color: var(--ebano); text-transform: capitalize; }
+.cal-count { color: var(--ceniza); }
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #fff;
+  border-top: 1px solid var(--ceniza-line);
+  border-left: 1px solid var(--ceniza-line);
+}
+.cal-dow {
+  padding: 10px 12px;
+  color: var(--ceniza);
+  border-right: 1px solid var(--ceniza-line);
+  border-bottom: 1px solid var(--ceniza-line);
+  background: var(--pergamino);
+}
+.cal-cell {
+  min-height: 116px;
+  padding: 8px;
+  border-right: 1px solid var(--ceniza-line);
+  border-bottom: 1px solid var(--ceniza-line);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.cal-cell-empty { background: rgba(155, 142, 133, 0.05); }
+.cal-daynum {
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  color: var(--ceniza);
+  align-self: flex-start;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.cal-cell-today .cal-daynum {
+  background: var(--siena);
+  color: var(--pergamino);
+  border-radius: 50%;
+}
+.cal-evs { display: flex; flex-direction: column; gap: 4px; }
+.cal-ev-link { text-decoration: none; }
+.cal-ev {
+  display: block;
+  font-family: "DM Sans", sans-serif;
+  font-size: 11px;
+  line-height: 1.2;
+  padding: 4px 7px;
+  border: 1px solid var(--ceniza-line);
+  color: var(--ebano);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: transform 0.15s ease;
+}
+.cal-ev-link:hover .cal-ev { transform: translateX(2px); }
+
+/* Colores por estado (compartidos con los puntos de la leyenda). */
+.cal-ev-consulta { border-color: var(--ceniza-line); background: var(--pergamino); color: var(--ceniza); }
+.cal-ev-reservada { border-color: var(--siena); background: rgba(181, 98, 62, 0.12); color: var(--siena); }
+.cal-ev-fotografiada { border-color: var(--ebano); background: #fff; color: var(--ebano); }
+.cal-ev-entregada { border-color: var(--ebano); background: var(--ebano); color: var(--pergamino); }
+.cal-ev-perdida {
+  border-color: var(--ceniza-line-soft);
+  background: transparent;
+  color: var(--ceniza);
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.adm-dash-uphead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.cal-dash-link { color: var(--siena); text-decoration: none; }
+.cal-dash-link:hover { text-decoration: underline; }
+
+.cal-legend { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 20px; }
+.cal-legend-item { display: inline-flex; align-items: center; gap: 8px; }
+.cal-legend-item .label { color: var(--ceniza); }
+.cal-dot { width: 14px; height: 14px; display: inline-block; }
+
+@media (max-width: 760px) {
+  .cal-cell { min-height: 78px; padding: 5px; }
+  .cal-dow { padding: 8px 6px; font-size: 10px; }
+  .cal-ev { font-size: 10px; padding: 3px 5px; }
+  .cal-month { font-size: 22px; }
+}

@@ -165,7 +165,12 @@ export default async function AdminHome() {
             </div>
 
             <div className="adm-dash-upcoming">
-              <h2 className="label adm-cli-sec-title">Próximas bodas</h2>
+              <div className="adm-dash-uphead">
+                <h2 className="label adm-cli-sec-title">Próximas bodas</h2>
+                <Link href="/admin/calendario" className="cal-dash-link label">
+                  Ver calendario →
+                </Link>
+              </div>
               {upcoming.length === 0 ? (
                 <p className="serif-italic adm-cli-empty">
                   No hay bodas próximas agendadas.
