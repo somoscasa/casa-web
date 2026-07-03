@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServiceSupabase, supabaseConfigured } from "@/lib/supabase/server";
+import { notionConfigured, syncEventsToNotion } from "@/lib/notion";
 
 // No cachear: cada corrida del cron debe pegarle de verdad a la base.
 export const dynamic = "force-dynamic";
@@ -36,7 +37,17 @@ export async function GET(req: Request) {
       );
     }
 
-    return NextResponse.json({ ok: true });
+    // Sync diario CASA → Notion (best-effort: nunca hace fallar el keep-alive).
+    let notion: unknown;
+    if (notionConfigured()) {
+      try {
+        notion = await syncEventsToNotion();
+      } catch (e) {
+        notion = { error: e instanceof Error ? e.message : "sync_failed" };
+      }
+    }
+
+    return NextResponse.json({ ok: true, notion });
   } catch (e) {
     return NextResponse.json(
       { ok: false, error: e instanceof Error ? e.message : "keep_alive_failed" },

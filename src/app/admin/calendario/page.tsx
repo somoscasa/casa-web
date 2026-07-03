@@ -3,7 +3,9 @@ import { redirect } from "next/navigation";
 import { getServerSupabase, supabaseConfigured } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
 import AdminTopbar from "@/components/admin/AdminTopbar";
+import NotionSyncButton from "@/components/admin/NotionSyncButton";
 import { normalizeStage, STAGE_LABEL, packageName } from "@/lib/crm";
+import { notionConfigured } from "@/lib/notion";
 
 const MESES = [
   "enero", "febrero", "marzo", "abril", "mayo", "junio",
@@ -130,6 +132,7 @@ export default async function Calendario({
               {events.length}{" "}
               {events.length === 1 ? "evento" : "eventos"}
             </span>
+            {notionConfigured() && <NotionSyncButton />}
           </div>
 
           <div className="cal-grid" role="grid">

@@ -3261,6 +3261,8 @@ input[type="date"].adm-input { cursor: pointer; }
 .cal-monthbar { display: flex; align-items: baseline; gap: 16px; margin-bottom: 18px; }
 .cal-month { font-size: 28px; color: var(--ebano); text-transform: capitalize; }
 .cal-count { color: var(--ceniza); }
+.cal-sync { margin-left: auto; display: inline-flex; align-items: center; gap: 12px; }
+.cal-sync-msg { color: var(--siena); }
 
 .cal-grid {
   display: grid;
