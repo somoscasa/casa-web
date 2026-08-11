@@ -21,8 +21,8 @@ export default function HomePage() {
             <div className="lo-ph" />
           </div>
           <div className="lo-hero-veil" />
-          <p className="lo-sub">Fotografia &middot; Video &middot; Bodas</p>
-          <h1>CASA</h1>
+          <p className="lo-sub">Estudio Audiovisual</p>
+          <h1 className="wordmark">CASA</h1>
           <p className="lo-tagline">Sentite en casa</p>
           <div className="lo-ctas">
             <Link href="/portfolio" className="lo-btn lo-btn-light">
