@@ -53,13 +53,14 @@ export default function HomePage() {
               <div className="label" style={{ color: "var(--siena)" }}>
                 Nosotros
               </div>
-              <h2>Somos un estudio chico con ideas grandes.</h2>
+              <h2>Experiencia, pasión y una mirada propia.</h2>
               <p>
-                Filmamos y fotografiamos bodas con un enfoque editorial y
-                documental. Cuidamos la luz, los gestos y el ritmo. Lo demas
-                &mdash;si te divertis, si bailas, si lloras&mdash; ya lo trae el
-                dia. Nos importa que te sientas comodo. Si estas comodo, las
-                fotos cambian.
+                Somos un equipo de más de 20 personas que vive de contar
+                historias. Llevamos años filmando y fotografiando bodas en
+                todo el país con un enfoque editorial y documental. Cuidamos
+                cada detalle &mdash;la luz, el ritmo, los gestos&mdash; porque
+                creemos que las mejores imágenes nacen cuando combinás
+                experiencia con creatividad. Esa es nuestra visión.
               </p>
             </Reveal>
           </div>
