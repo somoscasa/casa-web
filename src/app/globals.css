@@ -3392,13 +3392,15 @@ input[type="date"].adm-input { cursor: pointer; }
 .lo-hero-media{position:absolute;inset:0;z-index:0;overflow:hidden;background:var(--ebano)}
 .lo-hero-media .lo-ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:radial-gradient(120% 90% at 22% 18%,#4a352a 0%,#2a211c 45%,#171310 100%)}
 @keyframes lo-drift{to{transform:translate3d(4%,-3%,0) scale(1.08)}}
-.lo-hero-veil{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(28,23,20,.66),rgba(28,23,20,.5) 45%,rgba(28,23,20,.86))}
+.lo-hero-veil{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(28,23,20,.62),rgba(28,23,20,.42) 40%,rgba(28,23,20,.78))}
+.lo-hero-veil::before{content:"";position:absolute;inset:0;opacity:.08;mix-blend-mode:multiply;background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)' opacity='.6'/%3E%3C/svg%3E")}
+.lo-hero-veil::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 80% 70% at 50% 45%,rgba(181,98,62,.06) 0%,transparent 70%)}
 .lo-hero>*:not(.lo-hero-media):not(.lo-hero-veil){position:relative;z-index:2}
 .lo-hero .label{color:#e2b79f;margin-bottom:26px;opacity:0;animation:lo-fadeUp .9s .1s forwards}
-.lo-hero h1{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(64px,16vw,168px);line-height:.86;letter-spacing:.02em;opacity:0;animation:lo-fadeUp .9s .3s forwards}
-.lo-hero .lo-tagline{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(20px,3.4vw,30px);color:#e2b79f;margin-top:22px;opacity:0;animation:lo-fadeUp .9s .8s forwards}
-.lo-hero .lo-sub{font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,242,233,.72);margin-top:20px;opacity:0;animation:lo-fadeUp .9s .95s forwards}
-.lo-hero .lo-ctas{display:flex;gap:18px;margin-top:46px;flex-wrap:wrap;justify-content:center;opacity:0;animation:lo-fadeUp .9s 1.1s forwards}
+.lo-hero h1{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(64px,16vw,168px);line-height:.86;letter-spacing:.45em;text-indent:.45em;text-transform:uppercase;margin:40px 0 0;opacity:0;animation:lo-fadeUp .9s .3s forwards}
+.lo-hero .lo-tagline{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(20px,3.4vw,30px);color:#e2b79f;margin-top:44px;opacity:0;animation:lo-fadeUp .9s .8s forwards}
+.lo-hero .lo-sub{font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,242,233,.72);margin:0;opacity:0;animation:lo-fadeUp .9s .95s forwards}
+.lo-hero .lo-ctas{display:flex;gap:18px;margin-top:56px;flex-wrap:wrap;justify-content:center;opacity:0;animation:lo-fadeUp .9s 1.1s forwards}
 @keyframes lo-fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
 
 /* BTN */
@@ -3526,7 +3528,7 @@ input[type="date"].adm-input { cursor: pointer; }
 
 /* Responsive overrides */
 @media(max-width:760px){
-  .lo-hero h1{font-size:clamp(48px,14vw,100px)}
+  .lo-hero h1{font-size:clamp(48px,14vw,100px);letter-spacing:.35em;text-indent:.35em}
   .lo-ctas{flex-direction:column;align-items:center}
   .lo-gal{grid-template-columns:1fr}
   .lo-nums-grid{grid-template-columns:repeat(2,1fr)}
