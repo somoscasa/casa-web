@@ -135,6 +135,11 @@ export const TESTIMONIALS = [
       "No sentimos que había un fotógrafo. Sentimos que había alguien más disfrutando con nosotros.",
     attr: "Catalina y Tomás · Boda 2024",
   },
+  {
+    quote:
+      "El video nos hizo llorar de nuevo, meses después.",
+    attr: "Sol & Fede · Boda 2024",
+  },
 ];
 
 export const FAQ_BODAS = [
