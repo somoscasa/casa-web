@@ -3383,8 +3383,8 @@ input[type="date"].adm-input { cursor: pointer; }
 .lo-burger.lo-open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
 .lo-burger.lo-open span:nth-child(2){opacity:0}
 .lo-burger.lo-open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
-.lo-drawer{display:flex;flex-direction:column;align-items:center;gap:18px;background:var(--pergamino);overflow:hidden;max-height:0;padding:0 24px;transition:max-height .5s var(--ease),padding .5s var(--ease);border-bottom:1px solid var(--line);position:fixed;top:77px;left:0;right:0;z-index:59}
-.lo-drawer.lo-open{max-height:460px;padding:30px 24px 40px}
+.lo-drawer{display:flex;flex-direction:column;align-items:center;gap:18px;background:var(--pergamino);overflow:hidden;max-height:0;padding:0 24px;transition:max-height .5s var(--ease),padding .5s var(--ease);position:fixed;top:77px;left:0;right:0;z-index:59}
+.lo-drawer.lo-open{max-height:460px;padding:30px 24px 40px;border-bottom:1px solid var(--line)}
 .lo-drawer a{font-family:'Cormorant Garamond',serif;font-size:26px;letter-spacing:.3em;color:var(--ebano);text-decoration:none}
 
 /* HERO */
