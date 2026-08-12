@@ -99,12 +99,10 @@ export const IMG = {
 type GalleryPhoto = { src: string; alt: string; ratio: "tall" | "wide" | "sq" };
 
 export const GALLERY: GalleryPhoto[] = [
-  { src: u("1519741497674-611481863552", 800, 1180), alt: "Boda · Palermo · Catalina y Tomás", ratio: "tall" },
-  { src: u("1606216794074-735e91aa2c92", 900, 900), alt: "Detalle · anillos", ratio: "sq" },
-  { src: u("1465495976277-4387d4b0b4c6", 1200, 800), alt: "Getting ready", ratio: "wide" },
-  { src: u("1511285560929-80b456fea0bc", 800, 1180), alt: "Civil · Villa Crespo", ratio: "tall" },
-  { src: u("1530103862676-de8c9debad1d", 900, 900), alt: "El brindis", ratio: "sq" },
-  { src: u("1537633552985-df8429e8048b", 800, 1180), alt: "Última hora · fiesta", ratio: "tall" },
+  { src: "/portfolio/01-ceremonia.jpeg", alt: "Boda · Ceremonia", ratio: "tall" },
+  { src: "/portfolio/02-detalles.jpeg", alt: "Detalles · Getting ready", ratio: "sq" },
+  { src: "/portfolio/03-manos.jpeg", alt: "Manos · Anillos", ratio: "wide" },
+  { src: "/portfolio/04-abrazo.jpeg", alt: "El abrazo · Retrato", ratio: "tall" },
 ];
 
 type PortfolioItem = {
@@ -115,18 +113,10 @@ type PortfolioItem = {
 };
 
 export const PORTFOLIO: PortfolioItem[] = [
-  { id: "p01", title: "Catalina & Tomás", sub: "Boda · Palermo", src: u("1519741497674-611481863552", 900, 1240) },
-  { id: "p02", title: "El sí", sub: "Detalle · Anillos", src: u("1606216794074-735e91aa2c92", 900, 900) },
-  { id: "p03", title: "Primera luz", sub: "Getting ready", src: u("1465495976277-4387d4b0b4c6", 1200, 800) },
-  { id: "p04", title: "Civil", sub: "Villa Crespo", src: u("1511285560929-80b456fea0bc", 900, 1240) },
-  { id: "p05", title: "El brindis", sub: "Recepción", src: u("1530103862676-de8c9debad1d", 900, 900) },
-  { id: "p06", title: "Última hora", sub: "Fiesta · Boda", src: u("1537633552985-df8429e8048b", 900, 1240) },
-  { id: "p07", title: "Lucía & Mateo", sub: "Boda · Tigre", src: u("1525258946800-98cfd641d0de", 1200, 800) },
-  { id: "p08", title: "El abrazo", sub: "Ceremonia", src: u("1460978812857-470ed1c77af0", 900, 1240) },
-  { id: "p09", title: "Detalle", sub: "Velas y mesa", src: u("1522673607200-164d1b6ce486", 900, 900) },
-  { id: "p10", title: "Hora dorada", sub: "Retrato pareja", src: u("1469371670807-013ccf25f16a", 900, 1240) },
-  { id: "p11", title: "Después", sub: "Cierre · Madrugada", src: u("1453394221061-0e26a4e4406b", 1200, 800) },
-  { id: "p12", title: "Sofía & Bruno", sub: "Boda · San Isidro", src: u("1591604466107-ec97de577aff", 900, 1240) },
+  { id: "p01", title: "La ceremonia", sub: "Boda · Detalle", src: "/portfolio/01-ceremonia.jpeg" },
+  { id: "p02", title: "Detalles", sub: "Getting ready", src: "/portfolio/02-detalles.jpeg" },
+  { id: "p03", title: "El sí", sub: "Manos · Anillos", src: "/portfolio/03-manos.jpeg" },
+  { id: "p04", title: "El abrazo", sub: "Retrato · Pareja", src: "/portfolio/04-abrazo.jpeg" },
 ];
 
 export const TESTIMONIALS = [

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { PORTFOLIO } from "@/lib/site";
 
-const items = PORTFOLIO.slice(0, 5);
+const items = PORTFOLIO.slice(0, 4);
 
 export default function PortfolioGallery() {
   const [active, setActive] = useState(0);
