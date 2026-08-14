@@ -7,27 +7,27 @@ export default function ContactSection() {
   };
 
   return (
-    <section className="lo-sec" id="contacto">
+    <section className="lo-sec" id="contacto" aria-labelledby="contact-heading">
       <div className="wrap">
         <div className="lo-sec-head">
           <div className="label">Contacto</div>
-          <h2>Contanos sobre ustedes</h2>
+          <h2 id="contact-heading">Contanos sobre ustedes</h2>
         </div>
         <form
           onSubmit={handleSubmit}
           style={{ maxWidth: 600, margin: "0 auto" }}
         >
           <div className="lo-field">
-            <label>Nombre</label>
-            <input type="text" placeholder="Tu nombre y el de tu pareja" />
+            <label htmlFor="ct-nombre">Nombre</label>
+            <input id="ct-nombre" type="text" placeholder="Tu nombre y el de tu pareja" />
           </div>
           <div className="lo-field">
-            <label>Fecha</label>
-            <input type="text" placeholder="DD / MM / AAAA o aproximada" />
+            <label htmlFor="ct-fecha">Fecha</label>
+            <input id="ct-fecha" type="text" placeholder="DD / MM / AAAA o aproximada" />
           </div>
           <div className="lo-field">
-            <label>Mensaje</label>
-            <textarea rows={4} placeholder="Contanos sobre su evento..." />
+            <label htmlFor="ct-mensaje">Mensaje</label>
+            <textarea id="ct-mensaje" rows={4} placeholder="Contanos sobre su evento..." />
           </div>
           <button type="submit" className="lo-btn lo-btn-fill" style={{ marginTop: 10 }}>
             Enviar consulta

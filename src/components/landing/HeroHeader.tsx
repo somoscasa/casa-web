@@ -52,6 +52,7 @@ export default function HeroHeader() {
           <button
             className={`lo-burger${open ? " lo-open" : ""}`}
             aria-label="Menu"
+            aria-expanded={open}
             onClick={() => setOpen(!open)}
           >
             <span />
@@ -60,7 +61,7 @@ export default function HeroHeader() {
           </button>
         </div>
       </header>
-      <div className={`lo-drawer${open ? " lo-open" : ""}`}>
+      <div className={`lo-drawer${open ? " lo-open" : ""}`} aria-hidden={!open}>
         <Link href="/portfolio" onClick={() => setOpen(false)}>Portfolio</Link>
         <a href={hashHref("#proceso")} onClick={(e) => { handleHash(e, "#proceso"); }}>Proceso</a>
         <a href={hashHref("#servicios")} onClick={(e) => { handleHash(e, "#servicios"); }}>Servicios</a>

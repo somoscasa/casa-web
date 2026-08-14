@@ -36,6 +36,9 @@ export default function PortfolioGallery() {
                   key={item.id}
                   src={item.src}
                   alt={item.title}
+                  width={735}
+                  height={1103}
+                  loading={i === 0 ? "eager" : "lazy"}
                   className={i === active ? "lo-on" : ""}
                 />
               ))}

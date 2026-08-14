@@ -12,6 +12,13 @@ export const metadata: Metadata = {
     description: "Fotografía y video para bodas en Buenos Aires.",
     locale: "es_AR",
     type: "website",
+    images: [{ url: "/portfolio/01-ceremonia.jpeg", width: 735, height: 1103, alt: "CASA — Fotografía de bodas" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CASA — Estudio Audiovisual",
+    description: "Fotografía y video para bodas en Buenos Aires.",
+    images: ["/portfolio/01-ceremonia.jpeg"],
   },
 };
 
@@ -35,8 +42,31 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <a href="#main" className="skip-link">Saltar al contenido</a>
         {children}
         <Analytics />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "LocalBusiness",
+              name: "CASA — Estudio Audiovisual",
+              description: "Fotografía y video editorial para bodas en Buenos Aires.",
+              url: "https://casa-web-chi.vercel.app",
+              image: "https://casa-web-chi.vercel.app/portfolio/01-ceremonia.jpeg",
+              address: {
+                "@type": "PostalAddress",
+                addressLocality: "Villa Crespo",
+                addressRegion: "Buenos Aires",
+                addressCountry: "AR",
+              },
+              telephone: "+5491139295625",
+              email: "somoscasa.ar@gmail.com",
+              sameAs: ["https://www.instagram.com/somos.casa.ok/"],
+            }),
+          }}
+        />
       </body>
     </html>
   );

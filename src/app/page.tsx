@@ -14,7 +14,7 @@ export default function HomePage() {
   return (
     <div className="lo-grain">
       <HeroHeader />
-      <main>
+      <main id="main">
         {/* Hero */}
         <section className="lo-hero">
           <div className="lo-hero-media">
@@ -135,11 +135,11 @@ export default function HomePage() {
         </section>
 
         {/* FAQ */}
-        <section className="lo-sec">
+        <section className="lo-sec" aria-labelledby="faq-heading">
           <div className="wrap">
             <div className="lo-sec-head">
               <div className="label">Preguntas frecuentes</div>
-              <h2>Todo lo que necesitas saber.</h2>
+              <h2 id="faq-heading">Todo lo que necesitas saber.</h2>
             </div>
             <div className="lo-faq">
               {FAQ_BODAS.map((item, i) => (
