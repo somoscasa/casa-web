@@ -15,7 +15,7 @@ export default function NosotrosPage() {
   return (
     <>
       <Header />
-      <main>
+      <main id="main">
         <section className="pg-hero">
           <div className="wrap">
             <Reveal>

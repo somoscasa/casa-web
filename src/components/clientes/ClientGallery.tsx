@@ -100,7 +100,7 @@ export default function ClientGallery({
   };
 
   return (
-    <main className="gal">
+    <main id="main" className="gal">
       <header className="gal-head">
         <Link href="/" className="wordmark gal-mark" aria-label="CASA">
           CASA

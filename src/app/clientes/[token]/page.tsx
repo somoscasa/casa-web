@@ -10,7 +10,7 @@ type Params = { token: string };
 export default async function ClientGalleryPage({ params }: { params: Params }) {
   if (!supabaseConfigured()) {
     return (
-      <main className="cl-login">
+      <main id="main" className="cl-login">
         <div className="cl-card">
           <div className="wordmark cl-card-mark">CASA</div>
           <h1 className="serif cl-card-title">Próximamente</h1>

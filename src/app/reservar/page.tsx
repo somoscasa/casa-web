@@ -21,7 +21,7 @@ export default function ReservarPage() {
   return (
     <>
       <Header />
-      <main>
+      <main id="main">
         <section className="pg-hero">
           <div className="wrap">
             <Reveal>

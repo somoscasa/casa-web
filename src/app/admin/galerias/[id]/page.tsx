@@ -117,7 +117,7 @@ export default async function GalleryDetail({ params }: { params: Params }) {
   return (
     <>
       <AdminTopbar email={user.email ?? ""} />
-      <main className="adm-main">
+      <main id="main" className="adm-main">
         <div className="wrap">
           <Link href="/admin" className="link-arrow" style={{ marginBottom: 20 }}>
             ← Todas las galerías

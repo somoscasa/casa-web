@@ -17,7 +17,7 @@ export default function AdminLogin() {
 
   if (!browserSupabaseConfigured()) {
     return (
-      <main className="cl-login">
+      <main id="main" className="cl-login">
         <Link href="/" className="wordmark cl-back">CASA</Link>
         <div className="cl-card">
           <div className="wordmark cl-card-mark">CASA</div>
@@ -56,7 +56,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <main className="cl-login">
+    <main id="main" className="cl-login">
       <Link href="/" className="wordmark cl-back">CASA</Link>
 
       <div className="cl-card">

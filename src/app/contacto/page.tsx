@@ -12,7 +12,7 @@ export default function ContactoPage() {
   return (
     <>
       <Header />
-      <main className="page-contacto">
+      <main id="main" className="page-contacto">
         <div className="ct-left">
           <div className="ct-left-inner">
             <div className="wordmark ct-mark">CASA</div>

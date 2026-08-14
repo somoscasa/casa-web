@@ -18,7 +18,7 @@ export default function BodasPage() {
   return (
     <>
       <Header />
-      <main>
+      <main id="main">
         <section className="pg-hero">
           <div className="wrap">
             <Reveal>

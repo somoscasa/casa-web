@@ -51,7 +51,7 @@ export default function ClientesLogin() {
   };
 
   return (
-    <main className="cl-login">
+    <main id="main" className="cl-login">
       <Link href="/" className="wordmark cl-back" aria-label="Volver a CASA">
         CASA
       </Link>

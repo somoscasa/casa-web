@@ -16,7 +16,7 @@ export default async function NewGalleryPage() {
   return (
     <>
       <AdminTopbar email={user.email ?? ""} />
-      <main className="adm-main">
+      <main id="main" className="adm-main">
         <div className="wrap" style={{ maxWidth: 720 }}>
           <header className="adm-head">
             <div>

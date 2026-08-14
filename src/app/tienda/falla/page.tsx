@@ -10,7 +10,7 @@ export default function Falla() {
   return (
     <>
       <Header />
-      <main className="section center" style={{ paddingTop: 160, paddingBottom: 160 }}>
+      <main id="main" className="section center" style={{ paddingTop: 160, paddingBottom: 160 }}>
         <div className="wrap">
           <h1 className="serif" style={{ fontSize: 48, margin: "0 0 22px" }}>
             No pudimos confirmar tu pedido.

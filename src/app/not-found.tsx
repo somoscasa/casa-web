@@ -6,7 +6,7 @@ export default function NotFound() {
   return (
     <>
       <Header />
-      <main>
+      <main id="main">
         <section
           className="section center"
           style={{ paddingTop: 160, paddingBottom: 160 }}

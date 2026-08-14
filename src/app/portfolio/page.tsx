@@ -14,7 +14,7 @@ export default function PortfolioPage() {
   return (
     <>
       <Header />
-      <main>
+      <main id="main">
         <section className="pg-hero">
           <div className="wrap">
             <Reveal>

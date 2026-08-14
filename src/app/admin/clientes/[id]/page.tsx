@@ -106,7 +106,7 @@ export default async function ClienteDetail({ params }: { params: Params }) {
   return (
     <>
       <AdminTopbar email={user.email ?? ""} />
-      <main className="adm-main">
+      <main id="main" className="adm-main">
         <div className="wrap">
           <Link href="/admin/clientes" className="label adm-cli-back">
             ← Clientes

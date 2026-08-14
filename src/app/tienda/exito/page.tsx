@@ -10,7 +10,7 @@ export default function Exito() {
   return (
     <>
       <Header />
-      <main className="section center" style={{ paddingTop: 160, paddingBottom: 160 }}>
+      <main id="main" className="section center" style={{ paddingTop: 160, paddingBottom: 160 }}>
         <div className="wrap">
           <div className="ct-sent-mark" style={{ margin: "0 auto 28px" }} aria-hidden>
             ✓

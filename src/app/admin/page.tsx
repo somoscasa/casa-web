@@ -35,7 +35,7 @@ type UpcomingEvent = {
 export default async function AdminHome() {
   if (!supabaseConfigured()) {
     return (
-      <main className="cl-login">
+      <main id="main" className="cl-login">
         <div className="cl-card">
           <div className="wordmark cl-card-mark">CASA</div>
           <h1 className="serif cl-card-title">Admin</h1>
@@ -56,7 +56,7 @@ export default async function AdminHome() {
   if (!user) redirect("/admin/login");
   if (!isAdmin(user.email)) {
     return (
-      <main className="cl-login">
+      <main id="main" className="cl-login">
         <div className="cl-card">
           <div className="wordmark cl-card-mark">CASA</div>
           <h1 className="serif cl-card-title">Sin acceso</h1>
@@ -127,7 +127,7 @@ export default async function AdminHome() {
   return (
     <>
       <AdminTopbar email={user.email ?? ""} />
-      <main className="adm-main">
+      <main id="main" className="adm-main">
         <div className="wrap">
           <header className="adm-head">
             <div>

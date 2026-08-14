@@ -38,7 +38,7 @@ export default async function Reservas() {
   return (
     <>
       <AdminTopbar email={user.email ?? ""} />
-      <main className="adm-main">
+      <main id="main" className="adm-main">
         <div className="wrap">
           <header className="adm-head">
             <div>
