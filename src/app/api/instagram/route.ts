@@ -4,7 +4,7 @@ const TOKEN = process.env.INSTAGRAM_TOKEN ?? "";
 const FIELDS = "id,caption,media_type,media_url,thumbnail_url,permalink,timestamp";
 const LIMIT = 20;
 
-export const revalidate = 3600; // revalidate every hour
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   if (!TOKEN) {
