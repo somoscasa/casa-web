@@ -113,11 +113,44 @@ export default async function GalleryDetail({ params }: { params: Params }) {
   return (
     <>
       <AdminTopbar email={user.email ?? ""} />
-      <main id="main" className="adm-main">
+      <main id="main" className="adm-main adm-gp">
         <div className="wrap">
           <Link href="/admin" className="link-arrow" style={{ marginBottom: 20 }}>
             ← Todas las galerías
           </Link>
+
+          <section className="adm-cover" style={{ marginTop: 20 }}>
+            {photos[0]?.url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={photos[0].url} alt="" className="adm-cover-img" />
+            ) : (
+              <div className="adm-cover-empty">La primera foto que subas va a ser la portada</div>
+            )}
+            <div className="adm-cover-shade" />
+            <div className="adm-cover-body">
+              <div className="adm-cover-title">{displayTitle}</div>
+              {g.events?.date && (
+                <div className="adm-cover-date">
+                  {new Date(g.events.date + "T12:00:00").toLocaleDateString("es-AR", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </div>
+              )}
+              <a
+                href={`/clientes/${g.access_token}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="adm-cover-btn"
+              >
+                Ver como cliente
+              </a>
+            </div>
+          </section>
+          <p className="adm-cover-hint">
+            Portada: la primera foto de la grilla. Arrastrá otra al primer lugar para cambiarla.
+          </p>
 
           {/* Header */}
           <header className="adm-head" style={{ marginTop: 20 }}>

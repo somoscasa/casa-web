@@ -28,6 +28,13 @@ export type AdminPhoto = {
 
 export type Collection = { id: string; name: string };
 
+const Ico = {
+  drag: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h.01M15 5h.01M9 12h.01M15 12h.01M9 19h.01M15 19h.01" /></svg>,
+  folder: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5h6l2 2h10v10H3z" /></svg>,
+  trash: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" /></svg>,
+  heart: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.4 4.5 6.9 4.5c2 0 3.4 1.1 5.1 3 1.7-1.9 3.1-3 5.1-3 3.5 0 5.5 3.5 4.2 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" /></svg>,
+};
+
 function SortablePhoto({
   photo,
   galleryId,
@@ -45,13 +52,17 @@ function SortablePhoto({
     useSortable({ id: photo.id });
   const [deleting, setDeleting] = useState(false);
   const [showCollMenu, setShowCollMenu] = useState(false);
+  const [ratio, setRatio] = useState(1.5);
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.4 : 1,
     zIndex: isDragging ? 999 : undefined,
-  };
+    flexGrow: ratio,
+    ["--r" as string]: ratio,
+  } as React.CSSProperties;
+  const collName = collections.find((c) => c.id === photo.collection_id)?.name;
 
   const handleDelete = async () => {
     if (!confirm(`Borrar "${photo.original_filename ?? "esta foto"}"?`)) return;
@@ -69,35 +80,47 @@ function SortablePhoto({
 
   return (
     <div ref={setNodeRef} style={style} className="adm-pg-cell">
-      {/* Drag handle */}
-      <div className="adm-pg-drag" {...attributes} {...listeners} title="Arrastrar para reordenar">
-        ⠿
+      <div className="adm-pg-drag" {...attributes} {...listeners} title="Arrastrar para reordenar" aria-label="Arrastrar para reordenar">
+        {Ico.drag}
       </div>
 
-      {/* Thumbnail */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={photo.url} alt={photo.original_filename ?? ""} className="adm-pg-img" loading="lazy" />
+      <img
+        src={photo.url}
+        alt={photo.original_filename ?? ""}
+        className="adm-pg-img"
+        loading="lazy"
+        decoding="async"
+        ref={(el) => {
+          // Image may finish loading before hydration, so onLoad alone can miss it.
+          if (el?.complete && el.naturalWidth) setRatio(el.naturalWidth / el.naturalHeight);
+        }}
+        onLoad={(e) => {
+          const { naturalWidth: w, naturalHeight: h } = e.currentTarget;
+          if (w && h) setRatio(w / h);
+        }}
+      />
 
-      {/* Favorites badge */}
       {photo.favorites_count > 0 && (
-        <div className="adm-pg-fav">♥ {photo.favorites_count}</div>
+        <div className="adm-pg-fav" title="Veces marcada como favorita">
+          {Ico.heart} {photo.favorites_count}
+        </div>
       )}
 
-      {/* Overlay actions */}
+      {collName && <div className="adm-pg-chip">{collName}</div>}
+
       <div className="adm-pg-overlay">
         <div className="adm-pg-name">{photo.original_filename ?? "foto"}</div>
         <div className="adm-pg-actions">
-          {/* Collection assign */}
           {collections.length > 0 && (
             <div style={{ position: "relative" }}>
               <button
                 className="adm-pg-btn"
                 onClick={() => setShowCollMenu((v) => !v)}
                 title="Asignar colección"
+                aria-label="Asignar colección"
               >
-                {photo.collection_id
-                  ? (collections.find((c) => c.id === photo.collection_id)?.name ?? "📁")
-                  : "📁"}
+                {Ico.folder}
               </button>
               {showCollMenu && (
                 <div className="adm-pg-coll-menu">
@@ -133,8 +156,9 @@ function SortablePhoto({
             onClick={handleDelete}
             disabled={deleting}
             title="Borrar foto"
+            aria-label="Borrar foto"
           >
-            {deleting ? "…" : "✕"}
+            {deleting ? "…" : Ico.trash}
           </button>
         </div>
       </div>
