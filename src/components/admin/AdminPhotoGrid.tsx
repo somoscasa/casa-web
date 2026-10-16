@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   DndContext,
   closestCenter,
@@ -32,6 +33,7 @@ const Ico = {
   drag: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h.01M15 5h.01M9 12h.01M15 12h.01M9 19h.01M15 19h.01" /></svg>,
   folder: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5h6l2 2h10v10H3z" /></svg>,
   trash: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" /></svg>,
+  cover: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3zM3 15l5-5 4 4 3-3 6 6" /></svg>,
   heart: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.4 4.5 6.9 4.5c2 0 3.4 1.1 5.1 3 1.7-1.9 3.1-3 5.1-3 3.5 0 5.5 3.5 4.2 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" /></svg>,
 };
 
@@ -41,12 +43,16 @@ function SortablePhoto({
   onDelete,
   collections,
   onAssignCollection,
+  isCover,
+  onMakeCover,
 }: {
   photo: AdminPhoto;
   galleryId: string;
   onDelete: (id: string) => void;
   collections: Collection[];
   onAssignCollection: (photoId: string, collectionId: string | null) => void;
+  isCover: boolean;
+  onMakeCover: (photoId: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: photo.id });
@@ -107,7 +113,11 @@ function SortablePhoto({
         </div>
       )}
 
-      {collName && <div className="adm-pg-chip">{collName}</div>}
+      {isCover ? (
+        <div className="adm-pg-chip adm-pg-chip-cover">Portada</div>
+      ) : (
+        collName && <div className="adm-pg-chip">{collName}</div>
+      )}
 
       <div className="adm-pg-overlay">
         <div className="adm-pg-name">{photo.original_filename ?? "foto"}</div>
@@ -150,6 +160,18 @@ function SortablePhoto({
             </div>
           )}
 
+          {!isCover && (
+            <button
+              className="adm-pg-btn adm-pg-cover-btn"
+              onClick={() => onMakeCover(photo.id)}
+              title="Usar como portada"
+              aria-label="Usar como portada"
+            >
+              {Ico.cover}
+              <span>Portada</span>
+            </button>
+          )}
+
           {/* Delete */}
           <button
             className="adm-pg-btn adm-pg-del"
@@ -176,6 +198,7 @@ export default function AdminPhotoGrid({
   collections: Collection[];
 }) {
   const PAGE_SIZE = 100;
+  const router = useRouter();
   const [photos, setPhotos] = useState<AdminPhoto[]>(initialPhotos);
   const [saving, setSaving] = useState(false);
   const [filterColl, setFilterColl] = useState<string | null>(null);
@@ -205,6 +228,28 @@ export default function AdminPhotoGrid({
       }
     },
     [photos, galleryId]
+  );
+
+  const handleMakeCover = useCallback(
+    async (photoId: string) => {
+      const idx = photos.findIndex((p) => p.id === photoId);
+      if (idx <= 0) return;
+      const reordered = arrayMove(photos, idx, 0);
+      setPhotos(reordered);
+      setSaving(true);
+      try {
+        await fetch(`/api/admin/galleries/${galleryId}/reorder`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ order: reordered.map((p) => p.id) }),
+        });
+        router.refresh();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } finally {
+        setSaving(false);
+      }
+    },
+    [photos, galleryId, router]
   );
 
   const handleDelete = useCallback((photoId: string) => {
@@ -277,6 +322,8 @@ export default function AdminPhotoGrid({
                     onDelete={handleDelete}
                     collections={collections}
                     onAssignCollection={handleAssignCollection}
+                    isCover={photo.id === photos[0]?.id}
+                    onMakeCover={handleMakeCover}
                   />
                 ))}
               </div>
