@@ -45,6 +45,9 @@ function SortablePhoto({
   onAssignCollection,
   isCover,
   onMakeCover,
+  selected,
+  selecting,
+  onToggleSelect,
 }: {
   photo: AdminPhoto;
   galleryId: string;
@@ -53,6 +56,9 @@ function SortablePhoto({
   onAssignCollection: (photoId: string, collectionId: string | null) => void;
   isCover: boolean;
   onMakeCover: (photoId: string) => void;
+  selected: boolean;
+  selecting: boolean;
+  onToggleSelect: (photoId: string, shift: boolean) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: photo.id });
@@ -85,7 +91,29 @@ function SortablePhoto({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="adm-pg-cell">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`adm-pg-cell${selected ? " is-sel" : ""}${selecting ? " is-selecting" : ""}`}
+      onClickCapture={(e) => {
+        if (!selecting) return;
+        e.preventDefault();
+        e.stopPropagation();
+        onToggleSelect(photo.id, e.shiftKey);
+      }}
+    >
+      <button
+        type="button"
+        className="adm-pg-check"
+        aria-pressed={selected}
+        aria-label={selected ? "Quitar de la selección" : "Seleccionar foto"}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleSelect(photo.id, e.shiftKey);
+        }}
+      >
+        {selected && <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>}
+      </button>
       <div className="adm-pg-drag" {...attributes} {...listeners} title="Arrastrar para reordenar" aria-label="Arrastrar para reordenar">
         {Ico.drag}
       </div>
@@ -203,6 +231,11 @@ export default function AdminPhotoGrid({
   const [saving, setSaving] = useState(false);
   const [filterColl, setFilterColl] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [lastClicked, setLastClicked] = useState<string | null>(null);
+  const [bulkBusy, setBulkBusy] = useState<string | null>(null);
+  const [moveOpen, setMoveOpen] = useState(false);
+  const selecting = selected.size > 0;
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -271,7 +304,83 @@ export default function AdminPhotoGrid({
   );
 
   const filteredPhotos =
-    filterColl === null ? photos : photos.filter((p) => p.collection_id === filterColl);
+    filterColl === null
+      ? photos
+      : filterColl === "none"
+        ? photos.filter((p) => !p.collection_id)
+        : photos.filter((p) => p.collection_id === filterColl);
+
+  const toggleSelect = (photoId: string, shift: boolean) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (shift && lastClicked) {
+        const a = filteredPhotos.findIndex((p) => p.id === lastClicked);
+        const b = filteredPhotos.findIndex((p) => p.id === photoId);
+        if (a >= 0 && b >= 0) {
+          const [from, to] = a < b ? [a, b] : [b, a];
+          for (let i = from; i <= to; i++) next.add(filteredPhotos[i].id);
+          return next;
+        }
+      }
+      if (next.has(photoId)) next.delete(photoId);
+      else next.add(photoId);
+      return next;
+    });
+    setLastClicked(photoId);
+  };
+
+  const selectAll = () => setSelected(new Set(filteredPhotos.map((p) => p.id)));
+  const clearSelection = () => {
+    setSelected(new Set());
+    setMoveOpen(false);
+  };
+
+  const bulk = async (payload: { action: "delete" } | { action: "move"; collection_id: string | null }) => {
+    const ids = Array.from(selected);
+    const res = await fetch(`/api/admin/galleries/${galleryId}/photos/bulk`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ...payload, ids }),
+    });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      alert(`No se pudo completar: ${j?.error ?? res.status}. Recargá la página y probá de nuevo.`);
+      return false;
+    }
+    return true;
+  };
+
+  const bulkDelete = async () => {
+    const n = selected.size;
+    if (!confirm(`¿Borrar ${n} ${n === 1 ? "foto" : "fotos"}? Esto no se puede deshacer.`)) return;
+    setBulkBusy(`Borrando ${n} fotos…`);
+    try {
+      if (await bulk({ action: "delete" })) {
+        const gone = new Set(selected);
+        const wasCover = gone.has(photos[0]?.id);
+        setPhotos((prev) => prev.filter((p) => !gone.has(p.id)));
+        clearSelection();
+        if (wasCover) router.refresh();
+      }
+    } finally {
+      setBulkBusy(null);
+    }
+  };
+
+  const bulkMove = async (collectionId: string | null) => {
+    setMoveOpen(false);
+    const n = selected.size;
+    setBulkBusy(`Moviendo ${n} fotos…`);
+    try {
+      if (await bulk({ action: "move", collection_id: collectionId })) {
+        const moved = new Set(selected);
+        setPhotos((prev) => prev.map((p) => (moved.has(p.id) ? { ...p, collection_id: collectionId } : p)));
+        clearSelection();
+      }
+    } finally {
+      setBulkBusy(null);
+    }
+  };
   const visiblePhotos = filteredPhotos.slice(0, visibleCount);
   const hasMore = visibleCount < filteredPhotos.length;
 
@@ -288,15 +397,21 @@ export default function AdminPhotoGrid({
           <div className="adm-pg-tabs">
             <button
               className={`adm-pg-tab ${filterColl === null ? "active" : ""}`}
-              onClick={() => { setFilterColl(null); setVisibleCount(PAGE_SIZE); }}
+              onClick={() => { setFilterColl(null); setVisibleCount(PAGE_SIZE); clearSelection(); }}
             >
               Todas
+            </button>
+            <button
+              className={`adm-pg-tab ${filterColl === "none" ? "active" : ""}`}
+              onClick={() => { setFilterColl("none"); setVisibleCount(PAGE_SIZE); clearSelection(); }}
+            >
+              Sin colección
             </button>
             {collections.map((c) => (
               <button
                 key={c.id}
                 className={`adm-pg-tab ${filterColl === c.id ? "active" : ""}`}
-                onClick={() => { setFilterColl(c.id); setVisibleCount(PAGE_SIZE); }}
+                onClick={() => { setFilterColl(c.id); setVisibleCount(PAGE_SIZE); clearSelection(); }}
               >
                 {c.name}
               </button>
@@ -304,6 +419,58 @@ export default function AdminPhotoGrid({
           </div>
         )}
       </div>
+
+      {photos.length > 0 && (
+        <div className={`adm-sel-bar${selecting ? " on" : ""}`}>
+          {selecting ? (
+            <>
+              <span className="adm-sel-count">
+                {selected.size} {selected.size === 1 ? "seleccionada" : "seleccionadas"}
+              </span>
+              {selected.size < filteredPhotos.length && (
+                <button className="adm-sel-link" onClick={selectAll}>
+                  Seleccionar todas ({filteredPhotos.length})
+                </button>
+              )}
+              <button className="adm-sel-link" onClick={clearSelection}>Cancelar</button>
+              <span className="adm-sel-spacer" />
+              {bulkBusy ? (
+                <span className="adm-sel-count">{bulkBusy}</span>
+              ) : (
+                <>
+                  <div style={{ position: "relative" }}>
+                    <button className="adm-sel-btn" onClick={() => setMoveOpen((v) => !v)}>
+                      Mover a…
+                    </button>
+                    {moveOpen && (
+                      <div className="adm-sel-menu">
+                        {collections.length === 0 && (
+                          <div className="adm-sel-menu-empty">
+                            Primero creá una colección (ej. Civil, Boda) en la sección Colecciones.
+                          </div>
+                        )}
+                        {collections.map((c) => (
+                          <button key={c.id} onClick={() => bulkMove(c.id)}>{c.name}</button>
+                        ))}
+                        <button onClick={() => bulkMove(null)}>Sin colección</button>
+                      </div>
+                    )}
+                  </div>
+                  <button className="adm-sel-btn adm-sel-del" onClick={bulkDelete}>Borrar</button>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <span className="adm-sel-hint">Tocá el círculo de una foto para seleccionarla. Con Shift + clic marcás varias seguidas.</span>
+              <span className="adm-sel-spacer" />
+              <button className="adm-sel-btn" onClick={selectAll}>
+                Seleccionar todas ({filteredPhotos.length})
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       {photos.length === 0 ? (
         <p className="serif-italic" style={{ color: "var(--ceniza)" }}>
@@ -324,6 +491,9 @@ export default function AdminPhotoGrid({
                     onAssignCollection={handleAssignCollection}
                     isCover={photo.id === photos[0]?.id}
                     onMakeCover={handleMakeCover}
+                    selected={selected.has(photo.id)}
+                    selecting={selecting}
+                    onToggleSelect={toggleSelect}
                   />
                 ))}
               </div>
