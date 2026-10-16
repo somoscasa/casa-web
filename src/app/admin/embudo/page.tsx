@@ -6,6 +6,8 @@ import NewLeadForm from "@/components/admin/NewLeadForm";
 import LeadCard, { type Lead } from "@/components/admin/LeadCard";
 import { PIPELINE, STAGE_LABEL, normalizeStage, isPaid } from "@/lib/crm";
 
+export const dynamic = "force-dynamic";
+
 type Booking = { amount_deposit: number | null; payment_status: string | null };
 type EventRow = {
   id: string;

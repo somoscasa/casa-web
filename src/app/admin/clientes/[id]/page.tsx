@@ -12,6 +12,8 @@ import {
   formatDate,
 } from "@/lib/crm";
 
+export const dynamic = "force-dynamic";
+
 type Params = { id: string };
 
 type Booking = {

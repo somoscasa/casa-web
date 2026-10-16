@@ -3,6 +3,8 @@ import { getServerSupabase, supabaseConfigured } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 
+export const dynamic = "force-dynamic";
+
 type Row = {
   id: string;
   amount_deposit: number | null;

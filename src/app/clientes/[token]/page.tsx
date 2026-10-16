@@ -5,6 +5,8 @@ import ClientGallery, {
   type GalleryCollection,
 } from "@/components/clientes/ClientGallery";
 
+export const dynamic = "force-dynamic";
+
 type Params = { token: string };
 
 export default async function ClientGalleryPage({ params }: { params: Params }) {

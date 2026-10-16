@@ -9,6 +9,8 @@ import AdminGallerySettings from "@/components/admin/AdminGallerySettings";
 import AdminCollections from "@/components/admin/AdminCollections";
 import SendGalleryButton from "@/components/admin/SendGalleryButton";
 
+export const dynamic = "force-dynamic";
+
 type Params = { id: string };
 
 export default async function GalleryDetail({ params }: { params: Params }) {

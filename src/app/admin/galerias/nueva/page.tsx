@@ -4,6 +4,8 @@ import { isAdmin } from "@/lib/admin";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import NewGalleryForm from "@/components/admin/NewGalleryForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function NewGalleryPage() {
   if (!supabaseConfigured()) redirect("/admin");
   const supabase = getServerSupabase();

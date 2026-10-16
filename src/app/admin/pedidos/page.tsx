@@ -9,6 +9,8 @@ import AdminTopbar from "@/components/admin/AdminTopbar";
 import PedidoActions from "@/components/admin/PedidoActions";
 import { formatARS } from "@/lib/gallery-shop";
 
+export const dynamic = "force-dynamic";
+
 type OrderItem = {
   id: string;
   name: string;

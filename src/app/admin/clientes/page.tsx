@@ -6,6 +6,8 @@ import AdminTopbar from "@/components/admin/AdminTopbar";
 import { formatARS } from "@/lib/gallery-shop";
 import { isPaid, formatDate, nextEventDate } from "@/lib/crm";
 
+export const dynamic = "force-dynamic";
+
 type Booking = { amount_deposit: number | null; payment_status: string | null };
 type EventRow = {
   id: string;

@@ -7,6 +7,8 @@ import NotionSyncButton from "@/components/admin/NotionSyncButton";
 import { normalizeStage, STAGE_LABEL, packageName } from "@/lib/crm";
 import { notionConfigured } from "@/lib/notion";
 
+export const dynamic = "force-dynamic";
+
 const MESES = [
   "enero", "febrero", "marzo", "abril", "mayo", "junio",
   "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",

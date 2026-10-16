@@ -12,6 +12,8 @@ import {
   normalizeStage,
 } from "@/lib/crm";
 
+export const dynamic = "force-dynamic";
+
 type GalleryRow = {
   id: string;
   title: string | null;
