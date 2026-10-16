@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getServerSupabase, getServiceSupabase, supabaseConfigured } from "@/lib/supabase/server";
+import { getServerSupabase, getServiceSupabase, supabaseConfigured, batchSignedUrls } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import GalleryUploader from "@/components/admin/GalleryUploader";
@@ -87,22 +87,18 @@ export default async function GalleryDetail({ params }: { params: Params }) {
     favMap[f.photo_id] = (favMap[f.photo_id] ?? 0) + 1;
   }
 
-  // Generate signed URLs for thumbnails
-  const photos: AdminPhoto[] = await Promise.all(
-    rawPhotos.map(async (p) => {
-      const { data } = await svc.storage
-        .from("photos")
-        .createSignedUrl(p.storage_path, 60 * 60 * 4);
-      return {
-        id: p.id,
-        url: data?.signedUrl ?? "",
-        original_filename: p.original_filename,
-        sort_order: p.sort_order,
-        collection_id: p.collection_id,
-        favorites_count: favMap[p.id] ?? 0,
-      };
-    })
+  // Generate signed URLs in batches of 50
+  const urls = await batchSignedUrls(
+    svc, "photos", rawPhotos.map((p) => p.storage_path), 60 * 60 * 4,
   );
+  const photos: AdminPhoto[] = rawPhotos.map((p, i) => ({
+    id: p.id,
+    url: urls[i] ?? "",
+    original_filename: p.original_filename,
+    sort_order: p.sort_order,
+    collection_id: p.collection_id,
+    favorites_count: favMap[p.id] ?? 0,
+  }));
 
   const collections = (collsRes.data ?? []) as { id: string; name: string; sort_order: number }[];
   const viewCount = viewsRes.count ?? 0;

@@ -151,9 +151,11 @@ export default function AdminPhotoGrid({
   initialPhotos: AdminPhoto[];
   collections: Collection[];
 }) {
+  const PAGE_SIZE = 100;
   const [photos, setPhotos] = useState<AdminPhoto[]>(initialPhotos);
   const [saving, setSaving] = useState(false);
   const [filterColl, setFilterColl] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -199,8 +201,10 @@ export default function AdminPhotoGrid({
     []
   );
 
-  const visiblePhotos =
+  const filteredPhotos =
     filterColl === null ? photos : photos.filter((p) => p.collection_id === filterColl);
+  const visiblePhotos = filteredPhotos.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredPhotos.length;
 
   return (
     <section style={{ marginTop: 48 }}>
@@ -215,7 +219,7 @@ export default function AdminPhotoGrid({
           <div className="adm-pg-tabs">
             <button
               className={`adm-pg-tab ${filterColl === null ? "active" : ""}`}
-              onClick={() => setFilterColl(null)}
+              onClick={() => { setFilterColl(null); setVisibleCount(PAGE_SIZE); }}
             >
               Todas
             </button>
@@ -223,7 +227,7 @@ export default function AdminPhotoGrid({
               <button
                 key={c.id}
                 className={`adm-pg-tab ${filterColl === c.id ? "active" : ""}`}
-                onClick={() => setFilterColl(c.id)}
+                onClick={() => { setFilterColl(c.id); setVisibleCount(PAGE_SIZE); }}
               >
                 {c.name}
               </button>
@@ -237,22 +241,34 @@ export default function AdminPhotoGrid({
           Todavía no hay fotos. Subí las primeras arriba.
         </p>
       ) : (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={visiblePhotos.map((p) => p.id)} strategy={rectSortingStrategy}>
-            <div className="adm-pg-grid">
-              {visiblePhotos.map((photo) => (
-                <SortablePhoto
-                  key={photo.id}
-                  photo={photo}
-                  galleryId={galleryId}
-                  onDelete={handleDelete}
-                  collections={collections}
-                  onAssignCollection={handleAssignCollection}
-                />
-              ))}
+        <>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={visiblePhotos.map((p) => p.id)} strategy={rectSortingStrategy}>
+              <div className="adm-pg-grid">
+                {visiblePhotos.map((photo) => (
+                  <SortablePhoto
+                    key={photo.id}
+                    photo={photo}
+                    galleryId={galleryId}
+                    onDelete={handleDelete}
+                    collections={collections}
+                    onAssignCollection={handleAssignCollection}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+          {hasMore && (
+            <div style={{ textAlign: "center", margin: "24px 0" }}>
+              <button
+                className="btn btn-outline"
+                onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+              >
+                Cargar más ({filteredPhotos.length - visibleCount} restantes)
+              </button>
             </div>
-          </SortableContext>
-        </DndContext>
+          )}
+        </>
       )}
     </section>
   );

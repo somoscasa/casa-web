@@ -19,14 +19,16 @@ export async function PATCH(
 
   const svc = getServiceSupabase();
 
-  // Update sort_order for each photo id in the given order
-  const updates = body.order.map((photoId, index) =>
-    svc.from("photos").update({ sort_order: index }).eq("id", photoId).eq("gallery_id", params.id),
-  );
-
-  const results = await Promise.all(updates);
-  const errs = results.filter((r) => r.error);
-  if (errs.length > 0) return NextResponse.json({ error: "partial_fail" }, { status: 500 });
+  // Batch updates in chunks of 100 to avoid overwhelming the DB
+  const CHUNK = 100;
+  for (let i = 0; i < body.order.length; i += CHUNK) {
+    const chunk = body.order.slice(i, i + CHUNK);
+    await Promise.all(
+      chunk.map((photoId, j) =>
+        svc.from("photos").update({ sort_order: i + j }).eq("id", photoId).eq("gallery_id", params.id),
+      ),
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }

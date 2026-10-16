@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getServiceSupabase, supabaseConfigured } from "@/lib/supabase/server";
+import { getServiceSupabase, supabaseConfigured, batchSignedUrls } from "@/lib/supabase/server";
 import ClientGallery, {
   type PhotoWithUrl,
   type GalleryCollection,
@@ -63,19 +63,15 @@ export default async function ClientGalleryPage({ params }: { params: Params }) 
   const rawPhotos = gallery.photos ?? [];
   const sorted = [...rawPhotos].sort((a, b) => a.sort_order - b.sort_order);
 
-  const photos: PhotoWithUrl[] = await Promise.all(
-    sorted.map(async (p) => {
-      const { data } = await svc.storage
-        .from("photos")
-        .createSignedUrl(p.storage_path, 60 * 60 * 8);
-      return {
-        id: p.id,
-        url: data?.signedUrl ?? "",
-        original_filename: p.original_filename,
-        collection_id: p.collection_id,
-      };
-    })
+  const urls = await batchSignedUrls(
+    svc, "photos", sorted.map((p) => p.storage_path), 60 * 60 * 8,
   );
+  const photos: PhotoWithUrl[] = sorted.map((p, i) => ({
+    id: p.id,
+    url: urls[i] ?? "",
+    original_filename: p.original_filename,
+    collection_id: p.collection_id,
+  }));
 
   // Only include collections that have at least one photo in this gallery
   const usedCollectionIds = new Set(sorted.map((p) => p.collection_id).filter(Boolean));

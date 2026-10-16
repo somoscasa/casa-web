@@ -33,11 +33,10 @@ export default function GalleryUploader({
 
     const supabase = getBrowserSupabase();
     const errors: Progress["errors"] = [];
+    let done = 0;
+    const CONCURRENCY = 4;
 
-    for (let i = 0; i < files.length; i++) {
-      const f = files[i];
-      setProgress((p) => ({ ...(p as Progress), current: f.name }));
-
+    const uploadOne = async (f: File, idx: number) => {
       const ext = (f.name.split(".").pop() ?? "jpg").toLowerCase();
       const stamp = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
       const path = `${galleryId}/${stamp}.${ext}`;
@@ -59,7 +58,7 @@ export default function GalleryUploader({
           body: JSON.stringify({
             storage_path: path,
             original_filename: f.name,
-            sort_order: existingCount + i,
+            sort_order: existingCount + idx,
           }),
         });
         if (!res.ok) {
@@ -69,7 +68,14 @@ export default function GalleryUploader({
         }
       }
 
-      setProgress((p) => ({ ...(p as Progress), done: i + 1, errors }));
+      done++;
+      setProgress((p) => ({ ...(p as Progress), done, current: f.name, errors }));
+    };
+
+    // Process in concurrent batches of CONCURRENCY
+    for (let i = 0; i < files.length; i += CONCURRENCY) {
+      const batch = Array.from(files).slice(i, i + CONCURRENCY);
+      await Promise.all(batch.map((f, j) => uploadOne(f, i + j)));
     }
 
     setProgress((p) => (p ? { ...p, current: null } : p));

@@ -24,8 +24,8 @@ export async function GET() {
 
     const json = await res.json();
     const data = (json.data ?? [])
-      .filter((p: any) => p.media_type === "IMAGE" || p.media_type === "CAROUSEL_ALBUM")
-      .map((p: any) => ({
+      .filter((p: Record<string, string>) => p.media_type === "IMAGE" || p.media_type === "CAROUSEL_ALBUM")
+      .map((p: Record<string, string>) => ({
         id: p.id,
         src: p.media_url,
         permalink: p.permalink,
