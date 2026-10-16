@@ -14,6 +14,7 @@ export function supabaseConfigured() {
 export function getServerSupabase() {
   const cookieStore = cookies();
   return createServerClient(SUPABASE_URL, SUPABASE_ANON, {
+    global: { fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) },
     cookies: {
       get(name: string) {
         return cookieStore.get(name)?.value;
@@ -68,5 +69,7 @@ export function getServiceSupabase() {
   }
   return createPlainClient(SUPABASE_URL, SUPABASE_SERVICE, {
     auth: { persistSession: false, autoRefreshToken: false },
+    // Next.js caches fetch() by default; DB reads must always be fresh.
+    global: { fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) },
   });
 }
