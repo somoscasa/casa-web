@@ -62,7 +62,7 @@ export async function POST(
         </td></tr>
         <tr><td style="background:#1C1714;padding:40px;text-align:center;margin-bottom:32px;">
           <div style="font-family:Georgia,serif;font-size:13px;letter-spacing:0.18em;color:#9B8E85;margin-bottom:12px;text-transform:uppercase;">Tu código de acceso</div>
-          <div style="font-family:Georgia,serif;font-size:72px;letter-spacing:0.22em;color:#F7F2E9;line-height:1;">${code}</div>
+          <div style="font-family:Georgia,serif;font-size:44px;letter-spacing:0.18em;color:#F7F2E9;line-height:1;">${code}</div>
         </td></tr>
         <tr><td style="padding:32px 0;text-align:center;">
           <a href="${galleryUrl}" style="display:inline-block;background:#1C1714;color:#F7F2E9;font-family:'DM Sans',Arial,sans-serif;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;text-decoration:none;padding:16px 40px;">

@@ -19,7 +19,7 @@ export default function ClientesLogin() {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const c = code.trim();
+    const c = code.trim().toUpperCase();
     if (!c) {
       fail("Ingresá el código que te enviamos.");
       return;
@@ -69,6 +69,9 @@ export default function ClientesLogin() {
             type="text"
             placeholder="CÓDIGO DE ACCESO"
             value={code}
+            autoCapitalize="characters"
+            autoCorrect="off"
+            spellCheck={false}
             onChange={(e) => {
               setCode(e.target.value);
               setError(null);
