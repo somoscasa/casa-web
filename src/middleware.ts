@@ -30,9 +30,21 @@ export async function middleware(req: NextRequest) {
   });
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } = await Promise.race([
+      supabase.auth.getUser(),
+      new Promise<never>((_, reject) => {
+        controller.signal.addEventListener("abort", () =>
+          reject(new Error("timeout")),
+        );
+      }),
+    ]);
+
+    clearTimeout(timeout);
 
     if (!user && !isLoginRoute) {
       const loginUrl = new URL("/admin/login", req.url);
