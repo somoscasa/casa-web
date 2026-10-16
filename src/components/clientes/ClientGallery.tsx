@@ -10,6 +10,7 @@ import { formatARS } from "@/lib/gallery-shop";
 export type PhotoWithUrl = {
   id: string;
   url: string;
+  thumb: string;
   original_filename: string | null;
   collection_id: string | null;
 };
@@ -224,7 +225,7 @@ export default function ClientGallery({
       <section className="gp-cover">
         {cover && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={cover.url} alt="" className="gp-cover-img" />
+          <img src={cover.url} alt="" className="gp-cover-img" fetchPriority="high" />
         )}
         <div className="gp-cover-shade" />
         <div className="gp-cover-body">
@@ -312,7 +313,18 @@ export default function ClientGallery({
             <figure key={p.id} className={`gp-cell${watermarkEnabled ? " gp-wm" : ""}`}>
               <button className="gp-cell-btn" onClick={() => setLb(i)} aria-label={`Abrir foto ${i + 1}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.url} alt={p.original_filename ?? ""} loading="lazy" decoding="async" />
+                <img
+                  src={p.thumb}
+                  alt={p.original_filename ?? ""}
+                  loading="lazy"
+                  decoding="async"
+                  ref={(el) => {
+                    if (el?.complete && el.naturalWidth) el.dataset.loaded = "1";
+                  }}
+                  onLoad={(e) => {
+                    e.currentTarget.dataset.loaded = "1";
+                  }}
+                />
                 {watermarkEnabled && <span className="gp-wm-text">CASA</span>}
               </button>
               <div className="gp-cell-actions">
@@ -337,7 +349,7 @@ export default function ClientGallery({
                   className="gp-buy"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setOrderTarget({ mode: "photo", id: p.id, thumb: p.url, name: p.original_filename });
+                    setOrderTarget({ mode: "photo", id: p.id, thumb: p.thumb, name: p.original_filename });
                   }}
                 >
                   Imprimir

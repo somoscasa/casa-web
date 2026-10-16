@@ -21,6 +21,7 @@ import { CSS } from "@dnd-kit/utilities";
 export type AdminPhoto = {
   id: string;
   url: string;
+  thumb: string;
   original_filename: string | null;
   sort_order: number;
   collection_id: string | null;
@@ -123,7 +124,7 @@ function SortablePhoto({
 
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={photo.url}
+        src={photo.thumb}
         alt={photo.original_filename ?? ""}
         className="adm-pg-img"
         loading="lazy"

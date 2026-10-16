@@ -12,6 +12,11 @@ export type PhotoRow = {
 
 const PAGE = 1000;
 
+/** Light preview stored next to the untouched original; grids show this, downloads never do. */
+export function thumbPath(storagePath: string) {
+  return `thumbs/${storagePath}`;
+}
+
 /** Supabase returns at most 1000 rows per request, so read in pages. */
 export async function fetchAllPhotos(svc: Svc, galleryId: string): Promise<PhotoRow[]> {
   const all: PhotoRow[] = [];

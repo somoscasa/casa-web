@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getServiceSupabase, supabaseConfigured, batchSignedUrls } from "@/lib/supabase/server";
-import { fetchAllPhotos, galleryIsOpen } from "@/lib/gallery-data";
+import { fetchAllPhotos, galleryIsOpen, thumbPath } from "@/lib/gallery-data";
 import ClientGallery, {
   type PhotoWithUrl,
   type GalleryCollection,
@@ -54,12 +54,14 @@ export default async function ClientGalleryPage({ params }: { params: Params }) 
 
   const sorted = await fetchAllPhotos(svc, gallery.id);
 
-  const urls = await batchSignedUrls(
-    svc, "photos", sorted.map((p) => p.storage_path), 60 * 60 * 24,
-  );
+  const [urls, thumbs] = await Promise.all([
+    batchSignedUrls(svc, "photos", sorted.map((p) => p.storage_path), 60 * 60 * 24),
+    batchSignedUrls(svc, "photos", sorted.map((p) => thumbPath(p.storage_path)), 60 * 60 * 24),
+  ]);
   const photos: PhotoWithUrl[] = sorted.map((p, i) => ({
     id: p.id,
     url: urls[i] ?? "",
+    thumb: thumbs[i] ?? urls[i] ?? "",
     original_filename: p.original_filename,
     collection_id: p.collection_id,
   }));

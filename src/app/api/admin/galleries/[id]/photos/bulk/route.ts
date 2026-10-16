@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSupabase, getServiceSupabase, supabaseConfigured } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
+import { thumbPath } from "@/lib/gallery-data";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +58,9 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       if (selErr) return NextResponse.json({ error: selErr.message, deleted }, { status: 500 });
       if (!rows?.length) continue;
 
-      await svc.storage.from("photos").remove(rows.map((r) => r.storage_path));
+      await svc.storage
+        .from("photos")
+        .remove(rows.flatMap((r) => [r.storage_path, thumbPath(r.storage_path)]));
       const { error } = await svc.from("photos").delete().in("id", rows.map((r) => r.id));
       if (error) return NextResponse.json({ error: error.message, deleted }, { status: 500 });
       deleted += rows.length;

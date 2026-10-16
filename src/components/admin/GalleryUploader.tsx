@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getBrowserSupabase } from "@/lib/supabase/browser";
+import { thumbPath } from "@/lib/gallery-data";
 
 type Progress = {
   total: number;
@@ -16,6 +17,26 @@ type Progress = {
 const CONCURRENCY = 4;
 const MAX_BYTES = 50 * 1024 * 1024;
 const ALLOWED = new Set(["jpg", "jpeg", "png", "webp"]);
+
+const THUMB_EDGE = 1200;
+
+/** Light JPEG preview for grids; the original file is uploaded untouched. */
+async function makeThumb(file: File): Promise<Blob | null> {
+  try {
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, THUMB_EDGE / Math.max(bmp.width, bmp.height));
+    const w = Math.round(bmp.width * scale);
+    const h = Math.round(bmp.height * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    canvas.getContext("2d")?.drawImage(bmp, 0, 0, w, h);
+    bmp.close();
+    return await new Promise((res) => canvas.toBlob(res, "image/jpeg", 0.82));
+  } catch {
+    return null;
+  }
+}
 
 function friendlyError(msg: string) {
   const m = msg.toLowerCase();
@@ -120,6 +141,13 @@ export default function GalleryUploader({
           await supabase.storage.from("photos").remove([path]);
         } else {
           ok++;
+          const thumb = await makeThumb(f);
+          if (thumb) {
+            await supabase.storage
+              .from("photos")
+              .upload(thumbPath(path), thumb, { contentType: "image/jpeg", cacheControl: "3600", upsert: true })
+              .catch(() => null);
+          }
         }
       }
 

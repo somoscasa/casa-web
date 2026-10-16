@@ -3995,3 +3995,6 @@ input[type="date"].adm-input { cursor: pointer; }
   .lb-download span { display: none; }
   .gp-dl-box { padding: 30px 20px 22px; }
 }
+
+/* Placeholder height so lazy loading only fetches photos near the screen */
+.gp-cell-btn img:not([data-loaded]) { aspect-ratio: 2 / 3; }

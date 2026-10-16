@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getServerSupabase, getServiceSupabase, supabaseConfigured, batchSignedUrls } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
-import { fetchAllPhotos } from "@/lib/gallery-data";
+import { fetchAllPhotos, thumbPath } from "@/lib/gallery-data";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import GalleryUploader from "@/components/admin/GalleryUploader";
 import AdminPhotoGrid, { type AdminPhoto } from "@/components/admin/AdminPhotoGrid";
@@ -81,12 +81,14 @@ export default async function GalleryDetail({ params }: { params: Params }) {
   }
 
   // Generate signed URLs in batches of 50
-  const urls = await batchSignedUrls(
-    svc, "photos", rawPhotos.map((p) => p.storage_path), 60 * 60 * 4,
-  );
+  const [urls, thumbs] = await Promise.all([
+    batchSignedUrls(svc, "photos", rawPhotos.map((p) => p.storage_path), 60 * 60 * 4),
+    batchSignedUrls(svc, "photos", rawPhotos.map((p) => thumbPath(p.storage_path)), 60 * 60 * 4),
+  ]);
   const photos: AdminPhoto[] = rawPhotos.map((p, i) => ({
     id: p.id,
     url: urls[i] ?? "",
+    thumb: thumbs[i] ?? urls[i] ?? "",
     original_filename: p.original_filename,
     sort_order: p.sort_order,
     collection_id: p.collection_id,

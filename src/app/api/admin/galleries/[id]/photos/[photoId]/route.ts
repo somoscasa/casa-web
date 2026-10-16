@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSupabase, getServiceSupabase, supabaseConfigured } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
+import { thumbPath } from "@/lib/gallery-data";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,7 @@ export async function DELETE(
   if (!photo) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
   // Delete from storage
-  await svc.storage.from("photos").remove([photo.storage_path]);
+  await svc.storage.from("photos").remove([photo.storage_path, thumbPath(photo.storage_path)]);
 
   // Delete from DB (cascade handles favorites etc.)
   const { error } = await svc.from("photos").delete().eq("id", params.photoId);
