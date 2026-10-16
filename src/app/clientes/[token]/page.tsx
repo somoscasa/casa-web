@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getServiceSupabase, supabaseConfigured, batchSignedUrls } from "@/lib/supabase/server";
+import { fetchAllPhotos, galleryIsOpen } from "@/lib/gallery-data";
 import ClientGallery, {
   type PhotoWithUrl,
   type GalleryCollection,
@@ -32,11 +33,10 @@ export default async function ClientGalleryPage({ params }: { params: Params }) 
       `id, title, is_active, expires_at, download_permission, watermark_enabled,
        clients ( name, email ),
        events ( date, type ),
-       photos ( id, storage_path, original_filename, sort_order, collection_id ),
        collections ( id, name, sort_order )`
     )
     .eq("access_token", params.token)
-    .single();
+    .maybeSingle();
 
   const gallery = rawGallery as unknown as {
     id: string;
@@ -47,26 +47,15 @@ export default async function ClientGalleryPage({ params }: { params: Params }) 
     watermark_enabled: boolean;
     clients: { name: string | null; email: string } | null;
     events: { date: string | null; type: string | null } | null;
-    photos: {
-      id: string;
-      storage_path: string;
-      original_filename: string | null;
-      sort_order: number;
-      collection_id: string | null;
-    }[];
     collections: { id: string; name: string; sort_order: number }[];
   } | null;
 
-  if (!gallery || !gallery.is_active) notFound();
+  if (!gallery || !galleryIsOpen(gallery)) notFound();
 
-  // Check expiry server-side
-  if (gallery.expires_at && new Date(gallery.expires_at) < new Date()) notFound();
-
-  const rawPhotos = gallery.photos ?? [];
-  const sorted = [...rawPhotos].sort((a, b) => a.sort_order - b.sort_order);
+  const sorted = await fetchAllPhotos(svc, gallery.id);
 
   const urls = await batchSignedUrls(
-    svc, "photos", sorted.map((p) => p.storage_path), 60 * 60 * 8,
+    svc, "photos", sorted.map((p) => p.storage_path), 60 * 60 * 24,
   );
   const photos: PhotoWithUrl[] = sorted.map((p, i) => ({
     id: p.id,

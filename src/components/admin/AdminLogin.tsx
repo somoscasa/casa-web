@@ -40,6 +40,7 @@ export default function AdminLogin() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
+          shouldCreateUser: false,
           emailRedirectTo:
             typeof window !== "undefined"
               ? `${window.location.origin}/auth/callback?next=/admin`
@@ -49,7 +50,14 @@ export default function AdminLogin() {
       if (error) throw error;
       setSent(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No pudimos enviar el link.");
+      const msg = err instanceof Error ? err.message.toLowerCase() : "";
+      setError(
+        msg.includes("signups not allowed") || msg.includes("not found")
+          ? "Ese mail no tiene acceso al Admin."
+          : msg.includes("rate limit") || msg.includes("security purposes")
+            ? "Pediste muchos links seguidos. Esperá un minuto y probá de nuevo."
+            : "No pudimos enviar el link. Probá de nuevo en un momento.",
+      );
     } finally {
       setLoading(false);
     }

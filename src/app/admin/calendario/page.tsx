@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getServerSupabase, supabaseConfigured } from "@/lib/supabase/server";
+import { getServerSupabase, getServiceSupabase, supabaseConfigured } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import NotionSyncButton from "@/components/admin/NotionSyncButton";
@@ -39,6 +39,7 @@ export default async function Calendario({
 }) {
   if (!supabaseConfigured()) redirect("/admin");
   const supabase = getServerSupabase();
+  const db = getServiceSupabase();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -62,7 +63,7 @@ export default async function Calendario({
   const monthStart = `${year}-${pad(month)}-01`;
   const monthEnd = `${year}-${pad(month)}-${pad(lastDay)}`;
 
-  const { data } = await supabase
+  const { data } = await db
     .from("events")
     .select(`id, type, date, package, status, clients ( id, name, email )`)
     .gte("date", monthStart)

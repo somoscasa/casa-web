@@ -24,6 +24,14 @@ export default function NewGalleryForm() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setErr(null);
+    if (!f.clientName.trim() || !f.clientEmail.trim()) {
+      setErr("Completá el nombre y el email del cliente.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.clientEmail.trim())) {
+      setErr("El email no parece válido. Revisalo.");
+      return;
+    }
     setBusy(true);
     try {
       const res = await fetch("/api/admin/galleries", {
@@ -38,7 +46,12 @@ export default function NewGalleryForm() {
       const j = await res.json();
       router.push(`/admin/galerias/${j.gallery_id}`);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Error creando galería.");
+      const code = e instanceof Error ? e.message : "";
+      setErr(
+        code === "unauthorized" || code === "forbidden"
+          ? "Tu sesión expiró. Volvé a entrar al Admin."
+          : "No se pudo crear la galería. Probá de nuevo en un momento.",
+      );
     } finally {
       setBusy(false);
     }

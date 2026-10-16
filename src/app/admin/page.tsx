@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getServerSupabase, supabaseConfigured } from "@/lib/supabase/server";
+import { getServerSupabase, getServiceSupabase, supabaseConfigured } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { formatARS } from "@/lib/gallery-shop";
@@ -52,6 +52,7 @@ export default async function AdminHome() {
   }
 
   const supabase = getServerSupabase();
+  const db = getServiceSupabase();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -74,7 +75,7 @@ export default async function AdminHome() {
 
   const [galRes, upRes, bookRes, ordRes, cliCntRes, galActiveRes, evStatusRes] =
     await Promise.all([
-      supabase
+      db
         .from("galleries")
         .select(
           `id, title, access_token, is_active, created_at,
@@ -82,7 +83,7 @@ export default async function AdminHome() {
         )
         .order("created_at", { ascending: false })
         .limit(50),
-      supabase
+      db
         .from("events")
         .select(
           `id, type, date, package, clients ( name, email ), bookings ( payment_status )`,
@@ -90,14 +91,14 @@ export default async function AdminHome() {
         .gte("date", today)
         .order("date", { ascending: true })
         .limit(6),
-      supabase.from("bookings").select("amount_deposit, payment_status"),
-      supabase.from("orders").select("total, payment_status, shipping_status"),
-      supabase.from("clients").select("id", { count: "exact", head: true }),
-      supabase
+      db.from("bookings").select("amount_deposit, payment_status"),
+      db.from("orders").select("total, payment_status, shipping_status"),
+      db.from("clients").select("id", { count: "exact", head: true }),
+      db
         .from("galleries")
         .select("id", { count: "exact", head: true })
         .eq("is_active", true),
-      supabase.from("events").select("status"),
+      db.from("events").select("status"),
     ]);
 
   const galleries: GalleryRow[] = (galRes.data as unknown as GalleryRow[]) ?? [];

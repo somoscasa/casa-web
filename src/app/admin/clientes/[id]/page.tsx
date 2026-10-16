@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getServerSupabase, supabaseConfigured } from "@/lib/supabase/server";
+import { getServerSupabase, getServiceSupabase, supabaseConfigured } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { formatARS } from "@/lib/gallery-shop";
@@ -62,13 +62,14 @@ type ClientRow = {
 export default async function ClienteDetail({ params }: { params: Params }) {
   if (!supabaseConfigured()) redirect("/admin");
   const supabase = getServerSupabase();
+  const db = getServiceSupabase();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/admin/login");
   if (!isAdmin(user.email)) redirect("/admin");
 
-  const { data } = await supabase
+  const { data } = await db
     .from("clients")
     .select(
       `id, name, email, phone, created_at,

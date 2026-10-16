@@ -18,6 +18,26 @@ export type GalleryCollection = { id: string; name: string };
 
 const PAGE_SIZE = 60;
 
+type ZipPart = { part: number; from: number; to: number; count: number; bytes: number };
+type DlState =
+  | { kind: "loading" }
+  | { kind: "parts"; parts: ZipPart[]; total: number; started: Set<number> }
+  | { kind: "error"; message: string };
+
+function formatMB(bytes: number) {
+  const mb = bytes / (1024 * 1024);
+  return mb >= 1024 ? `${(mb / 1024).toFixed(1)} GB` : `${Math.max(1, Math.round(mb))} MB`;
+}
+
+function triggerDownload(href: string) {
+  const a = document.createElement("a");
+  a.href = href;
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
 const Icon = {
   heart: (
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.4 4.5 6.9 4.5c2 0 3.4 1.1 5.1 3 1.7-1.9 3.1-3 5.1-3 3.5 0 5.5 3.5 4.2 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" /></svg>
@@ -66,6 +86,7 @@ export default function ClientGallery({
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [toast, setToast] = useState<string | null>(null);
   const [slideshow, setSlideshow] = useState(false);
+  const [dl, setDl] = useState<DlState | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
   const cart = useGalleryCart(token);
@@ -79,9 +100,9 @@ export default function ClientGallery({
       .catch(() => {});
   }, [token]);
 
-  const flash = (msg: string) => {
+  const flash = (msg: string, ms = 2200) => {
     setToast(msg);
-    setTimeout(() => setToast(null), 2200);
+    setTimeout(() => setToast(null), ms);
   };
 
   const toggleFavorite = useCallback(
@@ -128,6 +149,7 @@ export default function ClientGallery({
     src: p.url,
     title: undefined,
     sub: p.original_filename ?? undefined,
+    download: canDownload ? downloadUrl(p) : undefined,
   }));
 
   const nav = useCallback(
@@ -152,9 +174,34 @@ export default function ClientGallery({
     setLb(0);
   };
 
-  const downloadAll = () => {
-    if (!canDownload) return;
-    window.location.href = `/api/clientes/${token}/zip`;
+  const zipHref = (part: number) => `/api/clientes/${token}/zip?part=${part}`;
+
+  const downloadAll = async () => {
+    if (!canDownload || dl?.kind === "loading") return;
+    setDl({ kind: "loading" });
+    try {
+      const res = await fetch(`/api/clientes/${token}/zip?info=1`, { cache: "no-store" });
+      if (res.status === 403) {
+        setDl({ kind: "error", message: "La descarga de esta galería no está habilitada." });
+        return;
+      }
+      if (!res.ok) throw new Error(String(res.status));
+      const info = (await res.json()) as { parts: ZipPart[]; total: number };
+      if (info.parts.length === 1) {
+        triggerDownload(zipHref(1));
+        setDl(null);
+        flash(`Tu descarga empezó (${info.total} fotos, ${formatMB(info.parts[0].bytes)}). Podés seguir mirando la galería.`, 6000);
+        return;
+      }
+      setDl({ kind: "parts", parts: info.parts, total: info.total, started: new Set() });
+    } catch {
+      setDl({ kind: "error", message: "No pudimos preparar la descarga. Revisá tu conexión y probá de nuevo." });
+    }
+  };
+
+  const startPart = (n: number) => {
+    triggerDownload(zipHref(n));
+    setDl((d) => (d?.kind === "parts" ? { ...d, started: new Set(d.started).add(n) } : d));
   };
 
   const scrollToGrid = () =>
@@ -329,6 +376,53 @@ export default function ClientGallery({
       />
 
       {toast && <div className="gp-toast" role="status">{toast}</div>}
+
+      {dl?.kind === "loading" && (
+        <div className="gp-toast" role="status">Preparando tu descarga…</div>
+      )}
+
+      {(dl?.kind === "parts" || dl?.kind === "error") && (
+        <div className="gp-dl" role="dialog" aria-modal="true" aria-labelledby="gp-dl-title" onClick={() => setDl(null)}>
+          <div className="gp-dl-box" onClick={(e) => e.stopPropagation()}>
+            <button className="gp-dl-close" onClick={() => setDl(null)} aria-label="Cerrar">✕</button>
+            {dl.kind === "error" ? (
+              <>
+                <h2 id="gp-dl-title" className="gp-dl-title">Descarga</h2>
+                <p className="gp-dl-text">{dl.message}</p>
+              </>
+            ) : (
+              <>
+                <h2 id="gp-dl-title" className="gp-dl-title">Descargar las {dl.total} fotos</h2>
+                <p className="gp-dl-text">
+                  Como son muchas fotos, las dividimos en {dl.parts.length} partes para que la
+                  descarga sea más segura. Descargá cada parte; las fotos vienen en su calidad original.
+                </p>
+                <ul className="gp-dl-list">
+                  {dl.parts.map((pt) => (
+                    <li key={pt.part} className="gp-dl-row">
+                      <div>
+                        <div className="gp-dl-name">Parte {pt.part} de {dl.parts.length}</div>
+                        <div className="gp-dl-meta">
+                          Fotos {pt.from} a {pt.to} · {formatMB(pt.bytes)}
+                        </div>
+                      </div>
+                      <button
+                        className={`gp-dl-btn${dl.started.has(pt.part) ? " done" : ""}`}
+                        onClick={() => startPart(pt.part)}
+                      >
+                        {dl.started.has(pt.part) ? "✓ Descargando" : "Descargar"}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <p className="gp-dl-foot">
+                  Si una parte se corta, podés volver a descargarla. Te recomendamos una conexión Wi-Fi.
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {storeEnabled && orderTarget && (
         <OrderModal

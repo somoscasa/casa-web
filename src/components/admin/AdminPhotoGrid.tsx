@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   DndContext,
@@ -85,6 +85,9 @@ function SortablePhoto({
         { method: "DELETE" }
       );
       if (res.ok) onDelete(photo.id);
+      else alert("No se pudo borrar la foto. Recargá la página y probá de nuevo.");
+    } catch {
+      alert("No se pudo borrar la foto. Revisá tu conexión.");
     } finally {
       setDeleting(false);
     }
@@ -237,6 +240,30 @@ export default function AdminPhotoGrid({
   const [moveOpen, setMoveOpen] = useState(false);
   const selecting = selected.size > 0;
 
+  // Server refresh (after uploads, cover change) sends a new list; keep the grid in sync.
+  useEffect(() => {
+    setPhotos(initialPhotos);
+  }, [initialPhotos]);
+
+  const saveOrder = async (reordered: AdminPhoto[], previous: AdminPhoto[]) => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/galleries/${galleryId}/reorder`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ order: reordered.map((p) => p.id) }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      return true;
+    } catch {
+      setPhotos(previous);
+      alert("No se pudo guardar el nuevo orden. Revisá tu conexión y probá de nuevo.");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
   const handleDragEnd = useCallback(
@@ -248,19 +275,11 @@ export default function AdminPhotoGrid({
       const newIndex = photos.findIndex((p) => p.id === over.id);
       const reordered = arrayMove(photos, oldIndex, newIndex);
       setPhotos(reordered);
-
-      setSaving(true);
-      try {
-        await fetch(`/api/admin/galleries/${galleryId}/reorder`, {
-          method: "PATCH",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ order: reordered.map((p) => p.id) }),
-        });
-      } finally {
-        setSaving(false);
-      }
+      const ok = await saveOrder(reordered, photos);
+      if (ok && (oldIndex === 0 || newIndex === 0)) router.refresh();
     },
-    [photos, galleryId]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [photos, galleryId, router]
   );
 
   const handleMakeCover = useCallback(
@@ -269,36 +288,35 @@ export default function AdminPhotoGrid({
       if (idx <= 0) return;
       const reordered = arrayMove(photos, idx, 0);
       setPhotos(reordered);
-      setSaving(true);
-      try {
-        await fetch(`/api/admin/galleries/${galleryId}/reorder`, {
-          method: "PATCH",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ order: reordered.map((p) => p.id) }),
-        });
+      if (await saveOrder(reordered, photos)) {
         router.refresh();
         window.scrollTo({ top: 0, behavior: "smooth" });
-      } finally {
-        setSaving(false);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [photos, galleryId, router]
   );
 
-  const handleDelete = useCallback((photoId: string) => {
-    setPhotos((prev) => prev.filter((p) => p.id !== photoId));
-  }, []);
+  const handleDelete = useCallback(
+    (photoId: string) => {
+      const wasCover = photos[0]?.id === photoId;
+      setPhotos((prev) => prev.filter((p) => p.id !== photoId));
+      if (wasCover) router.refresh();
+    },
+    [photos, router]
+  );
 
   const handleAssignCollection = useCallback(
     async (photoId: string, collectionId: string | null) => {
       setPhotos((prev) =>
         prev.map((p) => (p.id === photoId ? { ...p, collection_id: collectionId } : p))
       );
-      await fetch(`/api/admin/photos/${photoId}/collection`, {
+      const res = await fetch(`/api/admin/photos/${photoId}/collection`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ collection_id: collectionId }),
-      });
+      }).catch(() => null);
+      if (!res?.ok) alert("No se pudo cambiar la colección. Recargá la página y probá de nuevo.");
     },
     []
   );

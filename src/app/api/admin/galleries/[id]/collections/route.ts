@@ -9,6 +9,9 @@ export async function GET(
   { params }: { params: { id: string } },
 ) {
   if (!supabaseConfigured()) return NextResponse.json({ error: "not_configured" }, { status: 503 });
+  const supabase = getServerSupabase();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || !isAdmin(user.email)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const svc = getServiceSupabase();
   const { data, error } = await svc
     .from("collections")

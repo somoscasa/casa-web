@@ -11,6 +11,10 @@ type Settings = {
   watermark_enabled: boolean;
 };
 
+function argDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-CA", { timeZone: "America/Argentina/Buenos_Aires" });
+}
+
 export default function AdminGallerySettings({
   galleryId,
   initial,
@@ -22,12 +26,14 @@ export default function AdminGallerySettings({
   const [s, setS] = useState<Settings>(initial);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const save = async () => {
     setSaving(true);
     setSaved(false);
+    setError(null);
     try {
-      await fetch(`/api/admin/galleries/${galleryId}/settings`, {
+      const res = await fetch(`/api/admin/galleries/${galleryId}/settings`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -35,9 +41,12 @@ export default function AdminGallerySettings({
           expires_at: s.expires_at || null,
         }),
       });
+      if (!res.ok) throw new Error(String(res.status));
       setSaved(true);
       router.refresh();
       setTimeout(() => setSaved(false), 2500);
+    } catch {
+      setError("No se pudo guardar. Revisá tu conexión y probá de nuevo.");
     } finally {
       setSaving(false);
     }
@@ -81,16 +90,16 @@ export default function AdminGallerySettings({
           <input
             type="date"
             className="adm-input"
-            value={s.expires_at ? s.expires_at.slice(0, 10) : ""}
+            value={s.expires_at ? argDate(s.expires_at) : ""}
             onChange={(e) =>
               setS((p) => ({
                 ...p,
-                expires_at: e.target.value ? e.target.value + "T23:59:59Z" : null,
+                expires_at: e.target.value ? e.target.value + "T23:59:59-03:00" : null,
               }))
             }
           />
           <span className="adm-settings-hint">
-            Después de esta fecha la galería se bloquea automáticamente.
+            La galería se bloquea a las 23:59 (hora de Argentina) de ese día.
           </span>
         </div>
 
@@ -98,7 +107,7 @@ export default function AdminGallerySettings({
         <div className="adm-settings-field">
           <label className="adm-settings-label">Permiso de descarga</label>
           <div className="adm-radio-group">
-            {(["original", "web", "none"] as const).map((v) => (
+            {(["original", "none"] as const).map((v) => (
               <label key={v} className="adm-radio">
                 <input
                   type="radio"
@@ -108,7 +117,6 @@ export default function AdminGallerySettings({
                 />
                 <span>
                   {v === "original" && "Descarga completa (original)"}
-                  {v === "web" && "Solo versión web (reducida)"}
                   {v === "none" && "Sin descarga"}
                 </span>
               </label>
@@ -138,6 +146,7 @@ export default function AdminGallerySettings({
         </div>
       </div>
 
+      {error && <p className="cl-err" style={{ marginTop: 16 }}>{error}</p>}
       <button
         className="btn btn-dark"
         onClick={save}

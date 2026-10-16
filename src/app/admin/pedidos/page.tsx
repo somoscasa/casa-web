@@ -49,13 +49,14 @@ const STATUS_LABEL: Record<string, string> = {
 export default async function Pedidos() {
   if (!supabaseConfigured()) redirect("/admin");
   const supabase = getServerSupabase();
+  const db = getServiceSupabase();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/admin/login");
   if (!isAdmin(user.email)) redirect("/admin");
 
-  const { data } = await supabase
+  const { data } = await db
     .from("orders")
     .select(
       `id, items, total, payment_status, shipping_status, created_at,

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getServerSupabase, getServiceSupabase, supabaseConfigured, batchSignedUrls } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
+import { fetchAllPhotos } from "@/lib/gallery-data";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import GalleryUploader from "@/components/admin/GalleryUploader";
 import AdminPhotoGrid, { type AdminPhoto } from "@/components/admin/AdminPhotoGrid";
@@ -31,16 +32,12 @@ export default async function GalleryDetail({ params }: { params: Params }) {
       .select(
         `id, title, access_token, is_active, expires_at, download_permission,
          watermark_enabled, notification_sent_at,
-         clients ( name, email ),
+         clients ( name, email, phone ),
          events ( date, type )`
       )
       .eq("id", params.id)
       .single(),
-    svc
-      .from("photos")
-      .select("id, storage_path, original_filename, sort_order, collection_id")
-      .eq("gallery_id", params.id)
-      .order("sort_order", { ascending: true }),
+    fetchAllPhotos(svc, params.id).catch(() => []),
     svc.from("photo_favorites").select("photo_id").eq("gallery_id", params.id),
     svc
       .from("collections")
@@ -71,17 +68,11 @@ export default async function GalleryDetail({ params }: { params: Params }) {
     download_permission: "none" | "web" | "original";
     watermark_enabled: boolean;
     notification_sent_at: string | null;
-    clients: { name: string | null; email: string } | null;
+    clients: { name: string | null; email: string; phone: string | null } | null;
     events: { date: string | null; type: string | null } | null;
   };
 
-  const rawPhotos = (photosRes.data ?? []) as {
-    id: string;
-    storage_path: string;
-    original_filename: string | null;
-    sort_order: number;
-    collection_id: string | null;
-  }[];
+  const rawPhotos = photosRes;
 
   // Build favorites count map
   const favMap: Record<string, number> = {};
@@ -228,6 +219,10 @@ export default async function GalleryDetail({ params }: { params: Params }) {
                 galleryId={params.id}
                 clientEmail={client.email}
                 clientName={client.name}
+                clientPhone={client.phone}
+                accessCode={g.access_token}
+                galleryUrl={clientLink}
+                loginUrl={`${origin}/clientes`}
                 alreadySent={!!g.notification_sent_at}
               />
             )}
@@ -237,7 +232,11 @@ export default async function GalleryDetail({ params }: { params: Params }) {
           <AdminCollections galleryId={params.id} initial={collections} />
 
           {/* Photo uploader */}
-          <GalleryUploader galleryId={params.id} existingCount={photos.length} />
+          <GalleryUploader
+            galleryId={params.id}
+            existingCount={photos.length}
+            existingNames={rawPhotos.map((p) => p.original_filename ?? "").filter(Boolean)}
+          />
 
           {/* Photo grid with drag & drop */}
           <AdminPhotoGrid

@@ -23,11 +23,14 @@ export async function PATCH(
   const CHUNK = 100;
   for (let i = 0; i < body.order.length; i += CHUNK) {
     const chunk = body.order.slice(i, i + CHUNK);
-    await Promise.all(
+    const results = await Promise.all(
       chunk.map((photoId, j) =>
         svc.from("photos").update({ sort_order: i + j }).eq("id", photoId).eq("gallery_id", params.id),
       ),
     );
+    if (results.some((r) => r.error)) {
+      return NextResponse.json({ error: "partial_fail" }, { status: 500 });
+    }
   }
 
   return NextResponse.json({ ok: true });

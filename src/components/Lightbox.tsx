@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
-type Item = { src: string; title?: string; sub?: string };
+type Item = { src: string; title?: string; sub?: string; download?: string };
 
 export default function Lightbox({
   items,
@@ -15,6 +15,8 @@ export default function Lightbox({
   onClose: () => void;
   onNav: (delta: number) => void;
 }) {
+  const touchX = useRef<number | null>(null);
+
   useEffect(() => {
     if (index == null) return;
     const onKey = (e: KeyboardEvent) => {
@@ -32,12 +34,36 @@ export default function Lightbox({
 
   if (index == null) return null;
   const it = items[index];
+  if (!it) return null;
 
   return (
-    <div className="lb" onClick={onClose}>
+    <div
+      className="lb"
+      onClick={onClose}
+      onTouchStart={(e) => {
+        touchX.current = e.touches[0].clientX;
+      }}
+      onTouchEnd={(e) => {
+        if (touchX.current == null) return;
+        const dx = e.changedTouches[0].clientX - touchX.current;
+        touchX.current = null;
+        if (Math.abs(dx) > 50) onNav(dx < 0 ? 1 : -1);
+      }}
+    >
       <button className="lb-close" onClick={onClose} aria-label="Cerrar">
         ✕
       </button>
+      {it.download && (
+        <a
+          className="lb-download"
+          href={it.download}
+          onClick={(e) => e.stopPropagation()}
+          aria-label="Descargar esta foto"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 20h16" /></svg>
+          <span>Descargar</span>
+        </a>
+      )}
       <button
         className="lb-arrow lb-prev"
         onClick={(e) => {

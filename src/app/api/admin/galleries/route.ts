@@ -41,7 +41,9 @@ export async function POST(req: Request) {
   const { data: client, error: cErr } = await svc
     .from("clients")
     .upsert(
-      { name: clientName, email: clientEmail, phone: clientPhone },
+      clientPhone
+        ? { name: clientName, email: clientEmail, phone: clientPhone }
+        : { name: clientName, email: clientEmail },
       { onConflict: "email" },
     )
     .select()
