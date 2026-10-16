@@ -7,7 +7,9 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
-  const next = url.searchParams.get("next") ?? "/admin";
+  const rawNext = url.searchParams.get("next") ?? "/admin";
+  // Only same-site paths: "//host" or "/\\host" would send the fresh session elsewhere.
+  const next = /^\/(?![\/\\])/.test(rawNext) ? rawNext : "/admin";
 
   const supaUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
   const supaKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
