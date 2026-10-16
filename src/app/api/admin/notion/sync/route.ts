@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export async function POST() {
   if (!supabaseConfigured())
     return NextResponse.json({ error: "not_configured" }, { status: 503 });
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const {
     data: { user },
   } = await supabase.auth.getUser();

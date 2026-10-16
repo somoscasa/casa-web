@@ -22,7 +22,7 @@ type EventRow = {
 
 export default async function Embudo() {
   if (!supabaseConfigured()) redirect("/admin");
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const db = getServiceSupabase();
   const {
     data: { user },

@@ -53,7 +53,7 @@ function aggregate(c: ClientRow) {
 
 export default async function Clientes() {
   if (!supabaseConfigured()) redirect("/admin");
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const db = getServiceSupabase();
   const {
     data: { user },

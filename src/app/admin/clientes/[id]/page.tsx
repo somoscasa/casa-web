@@ -59,9 +59,10 @@ type ClientRow = {
   galleries: GalleryRow[] | null;
 };
 
-export default async function ClienteDetail({ params }: { params: Params }) {
+export default async function ClienteDetail(props: { params: Promise<Params> }) {
+  const params = await props.params;
   if (!supabaseConfigured()) redirect("/admin");
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const db = getServiceSupabase();
   const {
     data: { user },

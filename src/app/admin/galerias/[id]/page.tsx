@@ -14,9 +14,10 @@ export const dynamic = "force-dynamic";
 
 type Params = { id: string };
 
-export default async function GalleryDetail({ params }: { params: Params }) {
+export default async function GalleryDetail(props: { params: Promise<Params> }) {
+  const params = await props.params;
   if (!supabaseConfigured()) redirect("/admin");
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const {
     data: { user },
   } = await supabase.auth.getUser();

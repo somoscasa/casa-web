@@ -32,13 +32,14 @@ function typeLabel(t: string | null): string {
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
-export default async function Calendario({
-  searchParams,
-}: {
-  searchParams: { m?: string };
-}) {
+export default async function Calendario(
+  props: {
+    searchParams: Promise<{ m?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   if (!supabaseConfigured()) redirect("/admin");
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const db = getServiceSupabase();
   const {
     data: { user },

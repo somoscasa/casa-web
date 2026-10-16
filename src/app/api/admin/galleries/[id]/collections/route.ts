@@ -4,12 +4,10 @@ import { isAdmin } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(
-  _req: Request,
-  { params }: { params: { id: string } },
-) {
+export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   if (!supabaseConfigured()) return NextResponse.json({ error: "not_configured" }, { status: 503 });
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || !isAdmin(user.email)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const svc = getServiceSupabase();
@@ -22,13 +20,11 @@ export async function GET(
   return NextResponse.json({ collections: data ?? [] });
 }
 
-export async function POST(
-  req: Request,
-  { params }: { params: { id: string } },
-) {
+export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   if (!supabaseConfigured()) return NextResponse.json({ error: "not_configured" }, { status: 503 });
 
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || !isAdmin(user.email)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 

@@ -48,7 +48,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 export default async function Pedidos() {
   if (!supabaseConfigured()) redirect("/admin");
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const db = getServiceSupabase();
   const {
     data: { user },

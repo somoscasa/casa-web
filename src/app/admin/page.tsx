@@ -51,7 +51,7 @@ export default async function AdminHome() {
     );
   }
 
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const db = getServiceSupabase();
   const {
     data: { user },

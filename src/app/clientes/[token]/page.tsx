@@ -10,7 +10,8 @@ export const dynamic = "force-dynamic";
 
 type Params = { token: string };
 
-export default async function ClientGalleryPage({ params }: { params: Params }) {
+export default async function ClientGalleryPage(props: { params: Promise<Params> }) {
+  const params = await props.params;
   if (!supabaseConfigured()) {
     return (
       <main id="main" className="cl-login">

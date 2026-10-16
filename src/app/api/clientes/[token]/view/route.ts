@@ -4,10 +4,8 @@ import { createHash } from "crypto";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(
-  req: Request,
-  { params }: { params: { token: string } },
-) {
+export async function POST(req: Request, props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   if (!supabaseConfigured()) return NextResponse.json({ ok: true });
 
   const svc = getServiceSupabase();

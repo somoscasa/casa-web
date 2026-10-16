@@ -11,10 +11,11 @@ type Body =
   | { action: "delete"; ids: string[] }
   | { action: "move"; ids: string[]; collection_id: string | null };
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   if (!supabaseConfigured()) return NextResponse.json({ error: "not_configured" }, { status: 503 });
 
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || !isAdmin(user.email)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 

@@ -20,7 +20,7 @@ export async function GET(req: Request) {
     );
   }
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const supabase = createServerClient(supaUrl, supaKey, {
     cookies: {
       get(name: string) {

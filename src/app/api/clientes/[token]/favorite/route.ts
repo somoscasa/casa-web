@@ -4,10 +4,8 @@ import { galleryIsOpen } from "@/lib/gallery-data";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(
-  req: Request,
-  { params }: { params: { token: string } },
-) {
+export async function POST(req: Request, props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   if (!supabaseConfigured()) return NextResponse.json({ error: "not_configured" }, { status: 503 });
 
   const { photo_id } = (await req.json().catch(() => ({}))) as { photo_id?: string };
@@ -48,10 +46,8 @@ export async function POST(
   }
 }
 
-export async function GET(
-  _req: Request,
-  { params }: { params: { token: string } },
-) {
+export async function GET(_req: Request, props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   if (!supabaseConfigured()) return NextResponse.json({ favorites: [] });
 
   const svc = getServiceSupabase();

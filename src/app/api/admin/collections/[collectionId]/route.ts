@@ -4,12 +4,10 @@ import { isAdmin } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: { collectionId: string } },
-) {
+export async function PATCH(req: Request, props: { params: Promise<{ collectionId: string }> }) {
+  const params = await props.params;
   if (!supabaseConfigured()) return NextResponse.json({ error: "not_configured" }, { status: 503 });
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || !isAdmin(user.email)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
@@ -20,12 +18,10 @@ export async function PATCH(
   return NextResponse.json({ ok: true });
 }
 
-export async function DELETE(
-  _req: Request,
-  { params }: { params: { collectionId: string } },
-) {
+export async function DELETE(_req: Request, props: { params: Promise<{ collectionId: string }> }) {
+  const params = await props.params;
   if (!supabaseConfigured()) return NextResponse.json({ error: "not_configured" }, { status: 503 });
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || !isAdmin(user.email)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 

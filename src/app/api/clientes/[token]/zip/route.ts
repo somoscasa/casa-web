@@ -13,7 +13,8 @@ function safeName(s: string) {
   return s.replace(/[^a-z0-9-_]+/gi, "_").replace(/^_+|_+$/g, "") || "casa";
 }
 
-export async function GET(req: Request, { params }: { params: { token: string } }) {
+export async function GET(req: Request, props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   if (!supabaseConfigured()) {
     return NextResponse.json({ error: "not_configured" }, { status: 503 });
   }

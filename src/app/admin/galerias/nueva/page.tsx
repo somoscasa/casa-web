@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function NewGalleryPage() {
   if (!supabaseConfigured()) redirect("/admin");
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const {
     data: { user },
   } = await supabase.auth.getUser();

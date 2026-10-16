@@ -11,8 +11,8 @@ export function supabaseConfigured() {
 }
 
 /** Server client that reads cookies for auth (RLS-respecting). */
-export function getServerSupabase() {
-  const cookieStore = cookies();
+export async function getServerSupabase() {
+  const cookieStore = await cookies();
   return createServerClient(SUPABASE_URL, SUPABASE_ANON, {
     global: { fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) },
     cookies: {
