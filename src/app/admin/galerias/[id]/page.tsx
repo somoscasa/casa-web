@@ -7,6 +7,7 @@ import AdminTopbar from "@/components/admin/AdminTopbar";
 import GalleryUploader from "@/components/admin/GalleryUploader";
 import AdminPhotoGrid, { type AdminPhoto } from "@/components/admin/AdminPhotoGrid";
 import AdminGallerySettings from "@/components/admin/AdminGallerySettings";
+import DeleteGalleryButton from "@/components/admin/DeleteGalleryButton";
 import AdminCollections from "@/components/admin/AdminCollections";
 import SendGalleryButton from "@/components/admin/SendGalleryButton";
 
@@ -258,6 +259,12 @@ export default async function GalleryDetail(props: { params: Promise<Params> }) 
               download_permission: g.download_permission ?? "original",
               watermark_enabled: g.watermark_enabled ?? false,
             }}
+          />
+
+          <DeleteGalleryButton
+            galleryId={params.id}
+            title={displayTitle}
+            photoCount={photos.length}
           />
         </div>
       </main>

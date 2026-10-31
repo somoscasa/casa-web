@@ -34,7 +34,8 @@ type UpcomingEvent = {
   bookings: { payment_status: string }[] | null;
 };
 
-export default async function AdminHome() {
+export default async function AdminHome(props: { searchParams: Promise<{ borrada?: string }> }) {
+  const { borrada } = await props.searchParams;
   if (!supabaseConfigured()) {
     return (
       <main id="main" className="cl-login">
@@ -214,6 +215,7 @@ export default async function AdminHome() {
           {/* Galerías */}
           <header className="adm-head adm-head-sub">
             <h2 className="serif adm-subtitle">Galerías</h2>
+            {borrada && <span className="adm-status-chip adm-status-active">Galería borrada</span>}
           </header>
 
           {galRes.error && (

@@ -3998,3 +3998,11 @@ input[type="date"].adm-input { cursor: pointer; }
 
 /* Placeholder height so lazy loading only fetches photos near the screen */
 .gp-cell-btn img:not([data-loaded]) { aspect-ratio: 2 / 3; }
+
+/* Borrar galería */
+.adm-danger { margin: 56px 0 24px; padding: 28px; border: 1px solid #e3b7a8; background: #fdf6f3; }
+.adm-danger .adm-settings-hint { max-width: 640px; margin-bottom: 18px; line-height: 1.6; }
+.adm-danger-btn { background: #a3402a; color: #fff; border: 1px solid #a3402a; }
+.adm-danger-btn:hover:not(:disabled) { background: #7f2f1e; border-color: #7f2f1e; }
+.adm-danger-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.adm-danger-confirm { max-width: 420px; }
