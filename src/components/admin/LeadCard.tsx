@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import DeleteRecordButton from "./DeleteRecordButton";
 import {
   STAGES,
   STAGE_LABEL,
@@ -49,6 +50,8 @@ export default function LeadCard({ lead }: { lead: Lead }) {
     if (res.ok) {
       setEditing(false);
       router.refresh();
+    } else {
+      alert("No se pudo guardar el cambio. Recargá la página y probá de nuevo.");
     }
   };
 
@@ -136,6 +139,12 @@ export default function LeadCard({ lead }: { lead: Lead }) {
           ))}
         </select>
       </label>
+
+      <DeleteRecordButton
+        url={`/api/admin/events/${lead.id}`}
+        label="Borrar consulta"
+        confirmText={`¿Borrar la consulta de ${lead.name}? No se puede deshacer.`}
+      />
     </div>
   );
 }

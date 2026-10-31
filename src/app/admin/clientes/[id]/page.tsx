@@ -1,3 +1,4 @@
+import DeleteRecordButton from "@/components/admin/DeleteRecordButton";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getServerSupabase, getServiceSupabase, supabaseConfigured } from "@/lib/supabase/server";
@@ -125,6 +126,12 @@ export default async function ClienteDetail(props: { params: Promise<Params> }) 
             <div className="label adm-cli-since">
               Cliente desde {formatDate(client.created_at)}
             </div>
+            <DeleteRecordButton
+              url={`/api/admin/clients/${params.id}`}
+              label="Borrar cliente"
+              confirmText={`¿Borrar a ${client.name ?? client.email} y sus consultas? No se puede deshacer.`}
+              redirectTo="/admin/clientes"
+            />
           </header>
 
           <div className="adm-cli-summary">

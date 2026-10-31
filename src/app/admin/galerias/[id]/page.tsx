@@ -7,6 +7,7 @@ import AdminTopbar from "@/components/admin/AdminTopbar";
 import GalleryUploader from "@/components/admin/GalleryUploader";
 import AdminPhotoGrid, { type AdminPhoto } from "@/components/admin/AdminPhotoGrid";
 import AdminGallerySettings from "@/components/admin/AdminGallerySettings";
+import ClientInfoEditor from "@/components/admin/ClientInfoEditor";
 import DeleteGalleryButton from "@/components/admin/DeleteGalleryButton";
 import AdminCollections from "@/components/admin/AdminCollections";
 import SendGalleryButton from "@/components/admin/SendGalleryButton";
@@ -165,6 +166,16 @@ export default async function GalleryDetail(props: { params: Promise<Params> }) 
                   <span className="adm-status-chip adm-status-expired">Expirada</span>
                 )}
               </p>
+              <ClientInfoEditor
+                galleryId={params.id}
+                initial={{
+                  name: client?.name ?? "",
+                  email: client?.email ?? "",
+                  phone: client?.phone ?? "",
+                  eventDate: g.events?.date ?? "",
+                  eventType: g.events?.type === "quince" ? "quince" : "boda",
+                }}
+              />
             </div>
           </header>
 

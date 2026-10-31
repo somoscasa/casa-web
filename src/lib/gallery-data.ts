@@ -85,3 +85,29 @@ export function galleryIsOpen(g: { is_active: boolean; expires_at: string | null
   if (g.expires_at && new Date(g.expires_at) < new Date()) return false;
   return true;
 }
+
+export const STORAGE_LIMIT_BYTES = Number(process.env.STORAGE_LIMIT_MB ?? 1024) * 1024 * 1024;
+
+/** Total bytes in the photos bucket (originals + thumbnails), walking folders one level deep. */
+export async function storageUsage(svc: Svc): Promise<number> {
+  const listAll = async (prefix: string) => {
+    const out: { name: string; id: string | null; metadata: Record<string, unknown> | null }[] = [];
+    for (let offset = 0; ; offset += PAGE) {
+      const { data, error } = await svc.storage.from("photos").list(prefix, { limit: PAGE, offset });
+      if (error) throw new Error(error.message);
+      out.push(...(data ?? []));
+      if (!data || data.length < PAGE) break;
+    }
+    return out;
+  };
+  let total = 0;
+  const walk = async (prefix: string, depth: number) => {
+    for (const e of await listAll(prefix)) {
+      const size = (e.metadata as { size?: number } | null)?.size;
+      if (e.id && typeof size === "number") total += size;
+      else if (!e.id && depth < 2) await walk(prefix ? `${prefix}/${e.name}` : e.name, depth + 1);
+    }
+  };
+  await walk("", 0);
+  return total;
+}

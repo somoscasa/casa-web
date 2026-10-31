@@ -2,10 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Lightbox from "@/components/Lightbox";
-import { useGalleryCart } from "./galleryCart";
-import OrderModal, { type OrderTarget } from "./OrderModal";
-import GalleryCartDrawer from "./GalleryCartDrawer";
-import { formatARS } from "@/lib/gallery-shop";
 
 export type PhotoWithUrl = {
   id: string;
@@ -67,7 +63,6 @@ export default function ClientGallery({
   collections,
   watermarkEnabled,
   downloadPermission,
-  storeEnabled = true,
 }: {
   token: string;
   title: string;
@@ -76,21 +71,17 @@ export default function ClientGallery({
   collections: GalleryCollection[];
   watermarkEnabled: boolean;
   downloadPermission: "none" | "web" | "original";
-  storeEnabled?: boolean;
 }) {
   const [lb, setLb] = useState<number | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [activeCollection, setActiveCollection] = useState<string | null>(null);
   const [onlyFavs, setOnlyFavs] = useState(false);
-  const [orderTarget, setOrderTarget] = useState<OrderTarget | null>(null);
-  const [cartOpen, setCartOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [toast, setToast] = useState<string | null>(null);
   const [slideshow, setSlideshow] = useState(false);
   const [dl, setDl] = useState<DlState | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const cart = useGalleryCart(token);
   const canDownload = downloadPermission !== "none";
 
   useEffect(() => {
@@ -344,17 +335,6 @@ export default function ClientGallery({
                   {Icon.share}
                 </button>
               </div>
-              {storeEnabled && (
-                <button
-                  className="gp-buy"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOrderTarget({ mode: "photo", id: p.id, thumb: p.thumb, name: p.original_filename });
-                  }}
-                >
-                  Imprimir
-                </button>
-              )}
             </figure>
           ))}
         </div>
@@ -370,11 +350,6 @@ export default function ClientGallery({
 
       <footer className="gp-foot">
         <div className="gp-foot-mark">CASA</div>
-        {storeEnabled && photos.length > 0 && (
-          <button className="gp-foot-link" onClick={() => setOrderTarget({ mode: "album" })}>
-            Pedir el álbum de la boda
-          </button>
-        )}
       </footer>
 
       <Lightbox
@@ -436,36 +411,6 @@ export default function ClientGallery({
         </div>
       )}
 
-      {storeEnabled && orderTarget && (
-        <OrderModal
-          target={orderTarget}
-          onClose={() => setOrderTarget(null)}
-          onAdd={(product, qty, photo) => {
-            cart.add(product, qty, photo);
-            setCartOpen(true);
-          }}
-        />
-      )}
-
-      {storeEnabled && cart.totalItems > 0 && !cartOpen && (
-        <button className="gal-cart-fab gp-cart-fab" onClick={() => setCartOpen(true)}>
-          <span className="gal-cart-fab-count">{cart.totalItems}</span>
-          <span className="gal-cart-fab-label">Mi pedido</span>
-          <span className="gal-cart-fab-total">{formatARS(cart.total)}</span>
-        </button>
-      )}
-
-      {storeEnabled && cartOpen && (
-        <GalleryCartDrawer
-          token={token}
-          items={cart.items}
-          total={cart.total}
-          onClose={() => setCartOpen(false)}
-          onRemove={cart.remove}
-          onSetQty={cart.setQty}
-          onClear={cart.clear}
-        />
-      )}
     </main>
   );
 }

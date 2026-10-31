@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSupabase, getServiceSupabase, supabaseConfigured } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
+import { storageUsage, STORAGE_LIMIT_BYTES } from "@/lib/gallery-data";
+import GalleryList, { type GalleryListItem } from "@/components/admin/GalleryList";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { formatARS } from "@/lib/gallery-shop";
 import {
@@ -19,6 +21,7 @@ type GalleryRow = {
   title: string | null;
   access_token: string;
   is_active: boolean;
+  expires_at: string | null;
   created_at: string;
   clients: { name: string | null; email: string } | null;
   events: { date: string | null; type: string | null } | null;
@@ -79,11 +82,11 @@ export default async function AdminHome(props: { searchParams: Promise<{ borrada
       db
         .from("galleries")
         .select(
-          `id, title, access_token, is_active, created_at,
+          `id, title, access_token, is_active, expires_at, created_at,
            clients ( name, email ), events ( date, type ), photos ( count )`,
         )
         .order("created_at", { ascending: false })
-        .limit(50),
+        .limit(1000),
       db
         .from("events")
         .select(
@@ -102,7 +105,20 @@ export default async function AdminHome(props: { searchParams: Promise<{ borrada
       db.from("events").select("status"),
     ]);
 
+  const usedBytes = await storageUsage(db).catch(() => null);
+  const usedPct = usedBytes == null ? null : Math.round((usedBytes / STORAGE_LIMIT_BYTES) * 100);
   const galleries: GalleryRow[] = (galRes.data as unknown as GalleryRow[]) ?? [];
+  const now = Date.now();
+  const galleryItems: GalleryListItem[] = galleries.map((g) => ({
+    id: g.id,
+    title: g.title ?? g.clients?.name ?? g.clients?.email ?? "Galería sin título",
+    email: g.clients?.email ?? null,
+    code: g.access_token,
+    photos: g.photos?.[0]?.count ?? 0,
+    active: g.is_active,
+    expired: !!g.expires_at && new Date(g.expires_at).getTime() < now,
+    eventDate: g.events?.date ?? null,
+  }));
   const upcoming: UpcomingEvent[] =
     (upRes.data as unknown as UpcomingEvent[]) ?? [];
 
@@ -162,6 +178,26 @@ export default async function AdminHome(props: { searchParams: Promise<{ borrada
                 <span className="serif adm-dash-num">{galeriasActivas}</span>
                 <span className="label">galerías activas</span>
               </div>
+              {usedBytes != null && usedPct != null && (
+                <div
+                  className={`adm-dash-tile${usedPct >= 80 ? " adm-dash-warn" : ""}`}
+                  title="Espacio de fotos usado en Supabase"
+                >
+                  <span className="serif adm-dash-num">{usedPct}%</span>
+                  <span className="label">
+                    espacio usado · {Math.round(usedBytes / 1048576)} MB de{" "}
+                    {Math.round(STORAGE_LIMIT_BYTES / 1048576)} MB
+                  </span>
+                  <span className="adm-meter" aria-hidden>
+                    <span style={{ width: `${Math.min(100, usedPct)}%` }} />
+                  </span>
+                  {usedPct >= 80 && (
+                    <span className="adm-dash-warn-text">
+                      Casi lleno: borrá galerías viejas o pasá al plan pago.
+                    </span>
+                  )}
+                </div>
+              )}
               <Link href="/admin/pedidos" className="adm-dash-tile adm-dash-tile-link">
                 <span className="serif adm-dash-num">{porPreparar}</span>
                 <span className="label">pedidos por preparar</span>
@@ -238,42 +274,7 @@ export default async function AdminHome(props: { searchParams: Promise<{ borrada
               </Link>
             </div>
           ) : (
-            <ul className="adm-list">
-              {galleries.map((g) => {
-                const count = g.photos?.[0]?.count ?? 0;
-                return (
-                  <li key={g.id} className="adm-row">
-                    <div>
-                      <div className="serif adm-row-title">
-                        {g.title ??
-                          g.clients?.name ??
-                          g.clients?.email ??
-                          "Galería sin título"}
-                      </div>
-                      <div className="label adm-row-meta">
-                        {g.clients?.email} · {count} fotos ·{" "}
-                        {g.is_active ? "activa" : "pausada"}
-                      </div>
-                    </div>
-                    <div className="adm-row-actions">
-                      <Link
-                        href={`/clientes/${g.access_token}`}
-                        target="_blank"
-                        className="link-arrow"
-                      >
-                        Ver galería <span className="arr">→</span>
-                      </Link>
-                      <Link
-                        href={`/admin/galerias/${g.id}`}
-                        className="btn btn-outline adm-row-btn"
-                      >
-                        Editar
-                      </Link>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+            <GalleryList items={galleryItems} />
           )}
         </div>
       </main>
