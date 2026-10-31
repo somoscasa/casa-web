@@ -22,9 +22,17 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
     shipping_status?: string;
     payment_status?: string;
   };
+  const SHIP = new Set(["pending", "preparando", "enviado", "entregado"]);
+  const PAY = new Set(["pending", "paid"]);
   const update: Record<string, string> = {};
-  if (body.shipping_status) update.shipping_status = body.shipping_status;
-  if (body.payment_status) update.payment_status = body.payment_status;
+  if (body.shipping_status) {
+    if (!SHIP.has(body.shipping_status)) return NextResponse.json({ error: "invalid_status" }, { status: 400 });
+    update.shipping_status = body.shipping_status;
+  }
+  if (body.payment_status) {
+    if (!PAY.has(body.payment_status)) return NextResponse.json({ error: "invalid_status" }, { status: 400 });
+    update.payment_status = body.payment_status;
+  }
 
   if (Object.keys(update).length === 0)
     return NextResponse.json({ error: "no_change" }, { status: 400 });

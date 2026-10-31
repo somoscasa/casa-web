@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/crm";
 import { redirect } from "next/navigation";
 import { getServerSupabase, getServiceSupabase, supabaseConfigured } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
@@ -35,7 +36,7 @@ export default async function Reservas() {
        events ( type, date, package, clients ( name, email ) )`,
     )
     .order("created_at", { ascending: false })
-    .limit(100);
+    .limit(1000);
   const rows: Row[] = (data as unknown as Row[]) ?? [];
 
   return (
@@ -68,7 +69,7 @@ export default async function Reservas() {
                       <div className="label adm-row-meta">
                         {ev?.type} ·{" "}
                         {ev?.date
-                          ? new Date(ev.date).toLocaleDateString("es-AR")
+                          ? formatDate(ev.date)
                           : "sin fecha"}{" "}
                         · {ev?.package ?? "—"} · seña{" "}
                         {r.amount_deposit

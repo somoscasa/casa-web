@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/crm";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getServerSupabase, getServiceSupabase, supabaseConfigured, batchSignedUrls } from "@/lib/supabase/server";
@@ -173,7 +174,7 @@ export default async function GalleryDetail(props: { params: Promise<Params> }) 
                   email: client?.email ?? "",
                   phone: client?.phone ?? "",
                   eventDate: g.events?.date ?? "",
-                  eventType: g.events?.type === "quince" ? "quince" : "boda",
+                  eventType: g.events?.type ?? "boda",
                 }}
               />
             </div>
@@ -200,10 +201,7 @@ export default async function GalleryDetail(props: { params: Promise<Params> }) 
             {lastViewed && (
               <div className="adm-stat">
                 <div className="adm-stat-num adm-stat-date">
-                  {new Date(lastViewed).toLocaleDateString("es-AR", {
-                    day: "numeric",
-                    month: "short",
-                  })}
+                  {formatDate(lastViewed, { year: undefined })}
                 </div>
                 <div className="label">Última visita</div>
               </div>

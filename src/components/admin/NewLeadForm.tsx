@@ -29,9 +29,9 @@ export default function NewLeadForm() {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(f),
-    });
+    }).catch(() => null);
     setBusy(false);
-    if (res.ok) {
+    if (res?.ok) {
       setF({ ...EMPTY });
       setOpen(false);
       router.refresh();
@@ -76,7 +76,9 @@ export default function NewLeadForm() {
           onChange={(e) => set("tipo")(e.target.value)}
         >
           <option>Boda</option>
-          <option>Otro</option>
+          <option>Quince</option>
+          <option>Cumpleaños</option>
+          <option>Evento social</option>
         </select>
         <input
           className="emb-input"

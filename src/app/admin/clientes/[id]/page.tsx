@@ -10,7 +10,7 @@ import {
   packageName,
   payLabel,
   shipLabel,
-  formatDate,
+  formatDate, eventTypeLabel
 } from "@/lib/crm";
 
 export const dynamic = "force-dynamic";
@@ -166,7 +166,7 @@ export default async function ClienteDetail(props: { params: Promise<Params> }) 
                     <li key={ev.id} className="adm-cli-ev">
                       <div>
                         <div className="serif adm-cli-ev-title">
-                          {ev.type === "boda" ? "Boda" : ev.type ?? "Evento"} ·{" "}
+                          {eventTypeLabel(ev.type)} ·{" "}
                           {formatDate(ev.date)}
                         </div>
                         <div className="label adm-cli-ev-meta">

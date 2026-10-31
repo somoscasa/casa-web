@@ -4,7 +4,8 @@ import { getServerSupabase, getServiceSupabase, supabaseConfigured } from "@/lib
 import { isAdmin } from "@/lib/admin";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import NotionSyncButton from "@/components/admin/NotionSyncButton";
-import { normalizeStage, STAGE_LABEL, packageName } from "@/lib/crm";
+import { normalizeStage, STAGE_LABEL, packageName, eventTypeLabel, todayAR
+} from "@/lib/crm";
 import { notionConfigured } from "@/lib/notion";
 
 export const dynamic = "force-dynamic";
@@ -26,11 +27,7 @@ type EventRow = {
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-function typeLabel(t: string | null): string {
-  if (!t) return "Evento";
-  if (t === "boda") return "Boda";
-  return t.charAt(0).toUpperCase() + t.slice(1);
-}
+const typeLabel = eventTypeLabel;
 
 export default async function Calendario(
   props: {
@@ -47,8 +44,7 @@ export default async function Calendario(
   if (!user) redirect("/admin/login");
   if (!isAdmin(user.email)) redirect("/admin");
 
-  // "Hoy" en UTC, consistente con el resto del admin.
-  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayKey = todayAR();
   const defaultYM = todayKey.slice(0, 7);
 
   const raw = searchParams.m;
@@ -103,7 +99,7 @@ export default async function Calendario(
           <header className="adm-head">
             <div>
               <div className="label">Admin · Calendario</div>
-              <h1 className="serif adm-title">Calendario de bodas</h1>
+              <h1 className="serif adm-title">Calendario de eventos</h1>
             </div>
             <div className="cal-nav">
               <Link

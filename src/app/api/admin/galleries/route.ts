@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { getServerSupabase, getServiceSupabase, supabaseConfigured } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
+import { normalizeEventType } from "@/lib/crm";
 
 type Payload = {
   title?: string;
   clientName?: string;
   clientEmail?: string;
   clientPhone?: string;
-  eventType?: "boda" | "quince";
+  eventType?: string;
   eventDate?: string;
 };
 
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
   const clientName = body.clientName?.trim();
   const clientEmail = body.clientEmail?.trim().toLowerCase();
   const clientPhone = body.clientPhone?.trim() || null;
-  const eventType = body.eventType ?? "boda";
+  const eventType = normalizeEventType(body.eventType) ?? "boda";
   const eventDate = body.eventDate || null;
 
   if (!clientName || !clientEmail) {
@@ -52,15 +53,39 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: cErr?.message ?? "client_upsert" }, { status: 500 });
   }
 
-  const { data: event, error: eErr } = await svc
+  // Reuse the couple's inquiry if it has no gallery yet, so the funnel doesn't get a duplicate.
+  const { data: candidates } = await svc
     .from("events")
-    .insert({
-      client_id: client.id,
-      type: eventType,
-      date: eventDate,
-    })
-    .select()
-    .single();
+    .select("id, type, date, galleries ( id )")
+    .eq("client_id", client.id)
+    .order("created_at", { ascending: false });
+  const free = (candidates ?? []).filter(
+    (e) => !(e.galleries as unknown as { id: string }[] | null)?.length,
+  );
+  const reuse =
+    free.find((e) => eventDate && e.date === eventDate) ??
+    free.find((e) => e.type === eventType && (!e.date || !eventDate)) ??
+    null;
+
+  let event: { id: string } | null = null;
+  let eErr: { code?: string; message: string } | null = null;
+  if (reuse) {
+    const { error } = await svc
+      .from("events")
+      .update({ type: eventType, ...(eventDate ? { date: eventDate } : {}) })
+      .eq("id", reuse.id);
+    event = { id: reuse.id };
+    eErr = error;
+  } else {
+    ({ data: event, error: eErr } = await svc
+      .from("events")
+      .insert({ client_id: client.id, type: eventType, date: eventDate })
+      .select("id")
+      .single());
+  }
+  if (eErr?.code === "23514") {
+    return NextResponse.json({ error: "type_not_allowed" }, { status: 400 });
+  }
   if (eErr || !event) {
     return NextResponse.json({ error: eErr?.message ?? "event_create" }, { status: 500 });
   }

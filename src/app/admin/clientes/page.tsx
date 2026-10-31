@@ -1,10 +1,12 @@
+import SearchableList from "@/components/admin/SearchableList";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSupabase, getServiceSupabase, supabaseConfigured } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { formatARS } from "@/lib/gallery-shop";
-import { isPaid, formatDate, nextEventDate } from "@/lib/crm";
+import { isPaid, formatDate, nextEventDate, todayAR
+} from "@/lib/crm";
 
 export const dynamic = "force-dynamic";
 
@@ -69,9 +71,10 @@ export default async function Clientes() {
        galleries ( id, is_active, orders ( total, payment_status ) )`,
     )
     .order("created_at", { ascending: false })
-    .limit(200);
+    .limit(1000);
 
   const clients: ClientRow[] = (data as unknown as ClientRow[]) ?? [];
+  const today = todayAR();
 
   return (
     <>
@@ -83,9 +86,6 @@ export default async function Clientes() {
               <div className="label">Admin · Clientes</div>
               <h1 className="serif adm-title">Clientes</h1>
             </div>
-            <div className="adm-ped-summary label">
-              {clients.length} {clients.length === 1 ? "cliente" : "clientes"}
-            </div>
           </header>
 
           {clients.length === 0 ? (
@@ -93,11 +93,17 @@ export default async function Clientes() {
               <p className="serif-italic">Todavía no hay clientes.</p>
             </div>
           ) : (
-            <ul className="adm-cli-list">
-              {clients.map((c) => {
+            <SearchableList
+              className="adm-cli-list"
+              placeholder="Buscar por nombre, mail o teléfono"
+              noun={["cliente", "clientes"]}
+              items={clients.map((c) => {
                 const a = aggregate(c);
-                return (
-                  <li key={c.id}>
+                const past = !!a.proxima && a.proxima < today;
+                return {
+                  id: c.id,
+                  text: `${c.name ?? ""} ${c.email} ${c.phone ?? ""}`,
+                  node: (
                     <Link href={`/admin/clientes/${c.id}`} className="adm-cli-card">
                       <div className="adm-cli-main">
                         <div className="serif adm-cli-name">
@@ -113,7 +119,7 @@ export default async function Clientes() {
                           <span className="adm-cli-stat-num serif">
                             {a.proxima ? formatDate(a.proxima) : "—"}
                           </span>
-                          <span className="label">próxima boda</span>
+                          <span className="label">{past ? "último evento" : "próximo evento"}</span>
                         </div>
                         <div className="adm-cli-stat">
                           <span className="adm-cli-stat-num serif">{a.galerias}</span>
@@ -131,10 +137,10 @@ export default async function Clientes() {
                         </div>
                       </div>
                     </Link>
-                  </li>
-                );
+                  ),
+                };
               })}
-            </ul>
+            />
           )}
         </div>
       </main>

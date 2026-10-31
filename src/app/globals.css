@@ -1836,8 +1836,6 @@ button {
   .gal-title { font-size: 26px; }
   .gal-grid { grid-template-columns: repeat(2, 1fr); padding: 0 16px; gap: 12px; }
   .gal-bar { flex-direction: column; gap: 14px; padding: 16px 20px; }
-  .adm-topbar { grid-template-columns: 1fr auto; padding: 14px 20px; }
-  .adm-nav { display: none; }
   .adm-head { flex-direction: column; align-items: flex-start; }
   .adm-row { flex-direction: column; align-items: flex-start; }
 }
@@ -4025,3 +4023,32 @@ input[type="date"].adm-input { cursor: pointer; }
 
 .adm-del-link { color: #a3402a; font-size: 12px; margin-top: 12px; display: inline-block; opacity: 0.8; }
 .adm-del-link:hover { opacity: 1; }
+
+/* Menú del Admin: estado activo y tamaños medianos / celular */
+.adm-link.is-active { color: var(--pergamino); border-bottom: 1px solid var(--siena); padding-bottom: 3px; }
+@media (max-width: 1200px) {
+  .adm-topbar { padding: 16px 28px; }
+  .adm-nav { gap: 20px; }
+  .adm-user-email { display: none; }
+}
+@media (max-width: 760px) {
+  .adm-topbar {
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "mark user" "nav nav";
+    row-gap: 10px;
+    padding: 12px 16px 0;
+  }
+  .adm-mark { grid-area: mark; }
+  .adm-user { grid-area: user; }
+  .adm-nav {
+    grid-area: nav;
+    justify-self: stretch;
+    overflow-x: auto;
+    gap: 22px;
+    padding: 6px 0 12px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .adm-nav::-webkit-scrollbar { display: none; }
+  .adm-link { white-space: nowrap; flex: none; }
+}

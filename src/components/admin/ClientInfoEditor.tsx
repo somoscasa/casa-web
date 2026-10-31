@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { EVENT_TYPES, EVENT_TYPE_LABEL } from "@/lib/crm";
 
 type Info = { name: string; email: string; phone: string; eventDate: string; eventType: string };
 
@@ -10,6 +11,7 @@ const ERRORS: Record<string, string> = {
   bad_email: "El mail no parece válido. Revisalo.",
   email_taken: "Ese mail ya pertenece a otro cliente de CASA.",
   unauthorized: "Tu sesión expiró. Volvé a entrar al Admin.",
+  type_not_allowed: "Ese tipo de evento todavía no está habilitado en la base de datos.",
 };
 
 export default function ClientInfoEditor({ galleryId, initial }: { galleryId: string; initial: Info }) {
@@ -78,8 +80,9 @@ export default function ClientInfoEditor({ galleryId, initial }: { galleryId: st
         <label className="adm-settings-field">
           <span className="adm-settings-label">Tipo de evento</span>
           <select className="adm-input" value={f.eventType} onChange={set("eventType")}>
-            <option value="boda">Boda</option>
-            <option value="quince">Quince</option>
+            {EVENT_TYPES.map((t) => (
+              <option key={t} value={t}>{EVENT_TYPE_LABEL[t]}</option>
+            ))}
           </select>
         </label>
       </div>

@@ -32,9 +32,10 @@ export default function PedidoActions({
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
-    });
+    }).catch(() => null);
     setBusy(false);
-    if (res.ok) router.refresh();
+    if (res?.ok) router.refresh();
+    else alert("No se pudo actualizar el pedido. Recargá la página y probá de nuevo.");
   };
 
   return (

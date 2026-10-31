@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { getServerSupabase, getServiceSupabase, supabaseConfigured } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
+import { EVENT_TYPES } from "@/lib/crm";
 
 export const dynamic = "force-dynamic";
 
 type Body = { name?: string; email?: string; phone?: string; eventDate?: string | null; eventType?: string };
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const TYPES = new Set(["boda", "quince"]);
+const TYPES = new Set<string>(EVENT_TYPES);
 
 export async function PATCH(req: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -44,12 +45,6 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
       .neq("id", g.client_id)
       .maybeSingle();
     if (clash) return NextResponse.json({ error: "email_taken" }, { status: 409 });
-
-    const { error } = await svc
-      .from("clients")
-      .update({ name, email, phone: phone || null })
-      .eq("id", g.client_id);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   if (g.event_id) {
@@ -57,6 +52,15 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
       .from("events")
       .update({ date: eventDate, ...(eventType ? { type: eventType } : {}) })
       .eq("id", g.event_id);
+    if (error?.code === "23514") return NextResponse.json({ error: "type_not_allowed" }, { status: 400 });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (g.client_id) {
+    const { error } = await svc
+      .from("clients")
+      .update({ name, email, phone: phone || null })
+      .eq("id", g.client_id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

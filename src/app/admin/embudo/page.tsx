@@ -38,7 +38,7 @@ export default async function Embudo() {
        bookings ( amount_deposit, payment_status )`,
     )
     .order("date", { ascending: true, nullsFirst: false })
-    .limit(300);
+    .limit(1000);
 
   const rows: EventRow[] = (data as unknown as EventRow[]) ?? [];
 

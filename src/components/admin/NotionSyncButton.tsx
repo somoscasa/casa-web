@@ -22,7 +22,11 @@ export default function NotionSyncButton() {
         setMsg(
           data.error === "notion_not_configured"
             ? "Falta conectar Notion"
-            : "Error al sincronizar",
+            : data.error?.includes("_404")
+            ? "Notion no encuentra la base “Bodas CASA”: compartila con la conexión “Casa” en Notion"
+            : data.error?.includes("_401")
+            ? "La clave de Notion venció: hay que generar una nueva"
+            : "Error al sincronizar con Notion. Probá de nuevo en un rato",
         );
       }
     } catch {

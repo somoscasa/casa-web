@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { EVENT_TYPES, EVENT_TYPE_LABEL } from "@/lib/crm";
 
 export default function NewGalleryForm() {
   const router = useRouter();
@@ -10,7 +11,7 @@ export default function NewGalleryForm() {
     clientName: "",
     clientEmail: "",
     clientPhone: "",
-    eventType: "boda" as "boda" | "quince",
+    eventType: "boda" as string,
     eventDate: "",
   });
   const [err, setErr] = useState<string | null>(null);
@@ -50,6 +51,8 @@ export default function NewGalleryForm() {
       setErr(
         code === "unauthorized" || code === "forbidden"
           ? "Tu sesión expiró. Volvé a entrar al Admin."
+          : code === "type_not_allowed"
+          ? "Ese tipo de evento todavía no está habilitado en la base de datos."
           : "No se pudo crear la galería. Probá de nuevo en un momento.",
       );
     } finally {
@@ -106,10 +109,11 @@ export default function NewGalleryForm() {
           <select
             className="cf-input cf-select"
             value={f.eventType}
-            onChange={(e) => set("eventType")(e.target.value as "boda" | "quince")}
+            onChange={(e) => set("eventType")(e.target.value)}
           >
-            <option value="boda">Boda</option>
-            <option value="quince">Quince</option>
+            {EVENT_TYPES.map((t) => (
+              <option key={t} value={t}>{EVENT_TYPE_LABEL[t]}</option>
+            ))}
           </select>
           <span className="cf-select-chev" aria-hidden>▾</span>
         </div>

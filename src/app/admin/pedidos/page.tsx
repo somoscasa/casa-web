@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/crm";
 import { redirect } from "next/navigation";
 import {
   getServerSupabase,
@@ -64,7 +65,7 @@ export default async function Pedidos() {
        shipping_address, notes, galleries ( title )`,
     )
     .order("created_at", { ascending: false })
-    .limit(100);
+    .limit(1000);
   const rows: Row[] = (data as unknown as Row[]) ?? [];
 
   // Collect photo ids across all order items, sign thumbnails in one pass.
@@ -124,11 +125,7 @@ export default async function Pedidos() {
                           Pedido #{r.id.slice(0, 8)}
                         </div>
                         <div className="label adm-ped-date">
-                          {new Date(r.created_at).toLocaleDateString("es-AR", {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })}
+                          {formatDate(r.created_at, { month: "long" })}
                           {r.galleries?.title && ` · ${r.galleries.title}`}
                         </div>
                       </div>

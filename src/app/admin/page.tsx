@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSupabase, getServiceSupabase, supabaseConfigured } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
-import { storageUsage, STORAGE_LIMIT_BYTES } from "@/lib/gallery-data";
+import { storageUsage, STORAGE_LIMIT_BYTES, isExpired } from "@/lib/gallery-data";
 import GalleryList, { type GalleryListItem } from "@/components/admin/GalleryList";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { formatARS } from "@/lib/gallery-shop";
@@ -11,7 +11,7 @@ import {
   packageName,
   payLabel,
   formatDate,
-  normalizeStage,
+  normalizeStage, eventTypeLabel, todayAR
 } from "@/lib/crm";
 
 export const dynamic = "force-dynamic";
@@ -75,7 +75,7 @@ export default async function AdminHome(props: { searchParams: Promise<{ borrada
     );
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayAR();
 
   const [galRes, upRes, bookRes, ordRes, cliCntRes, galActiveRes, evStatusRes] =
     await Promise.all([
@@ -108,7 +108,6 @@ export default async function AdminHome(props: { searchParams: Promise<{ borrada
   const usedBytes = await storageUsage(db).catch(() => null);
   const usedPct = usedBytes == null ? null : Math.round((usedBytes / STORAGE_LIMIT_BYTES) * 100);
   const galleries: GalleryRow[] = (galRes.data as unknown as GalleryRow[]) ?? [];
-  const now = Date.now();
   const galleryItems: GalleryListItem[] = galleries.map((g) => ({
     id: g.id,
     title: g.title ?? g.clients?.name ?? g.clients?.email ?? "Galería sin título",
@@ -116,7 +115,7 @@ export default async function AdminHome(props: { searchParams: Promise<{ borrada
     code: g.access_token,
     photos: g.photos?.[0]?.count ?? 0,
     active: g.is_active,
-    expired: !!g.expires_at && new Date(g.expires_at).getTime() < now,
+    expired: isExpired(g.expires_at),
     eventDate: g.events?.date ?? null,
   }));
   const upcoming: UpcomingEvent[] =
@@ -206,14 +205,14 @@ export default async function AdminHome(props: { searchParams: Promise<{ borrada
 
             <div className="adm-dash-upcoming">
               <div className="adm-dash-uphead">
-                <h2 className="label adm-cli-sec-title">Próximas bodas</h2>
+                <h2 className="label adm-cli-sec-title">Próximos eventos</h2>
                 <Link href="/admin/calendario" className="cal-dash-link label">
                   Ver calendario →
                 </Link>
               </div>
               {upcoming.length === 0 ? (
                 <p className="serif-italic adm-cli-empty">
-                  No hay bodas próximas agendadas.
+                  No hay eventos próximos agendados.
                 </p>
               ) : (
                 <ul className="adm-dash-evlist">
@@ -231,7 +230,7 @@ export default async function AdminHome(props: { searchParams: Promise<{ borrada
                             {ev.clients?.name ?? ev.clients?.email ?? "Sin cliente"}
                           </div>
                           <div className="label adm-dash-ev-meta">
-                            {ev.type === "boda" ? "Boda" : ev.type ?? "Evento"} ·{" "}
+                            {eventTypeLabel(ev.type)} ·{" "}
                             {packageName(ev.package)}
                           </div>
                         </div>

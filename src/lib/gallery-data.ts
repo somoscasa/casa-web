@@ -80,10 +80,12 @@ export function splitIntoParts(photos: PhotoRow[], sizes: Map<string, number>): 
   return { parts, ranges };
 }
 
+export function isExpired(expiresAt: string | null) {
+  return !!expiresAt && new Date(expiresAt) < new Date();
+}
+
 export function galleryIsOpen(g: { is_active: boolean; expires_at: string | null }) {
-  if (!g.is_active) return false;
-  if (g.expires_at && new Date(g.expires_at) < new Date()) return false;
-  return true;
+  return g.is_active && !isExpired(g.expires_at);
 }
 
 export const STORAGE_LIMIT_BYTES = Number(process.env.STORAGE_LIMIT_MB ?? 1024) * 1024 * 1024;
@@ -101,11 +103,15 @@ export async function storageUsage(svc: Svc): Promise<number> {
     return out;
   };
   let total = 0;
-  const walk = async (prefix: string, depth: number) => {
+  const walk = async (prefix: string, depth: number): Promise<void> => {
+    const subfolders: string[] = [];
     for (const e of await listAll(prefix)) {
       const size = (e.metadata as { size?: number } | null)?.size;
       if (e.id && typeof size === "number") total += size;
-      else if (!e.id && depth < 2) await walk(prefix ? `${prefix}/${e.name}` : e.name, depth + 1);
+      else if (!e.id && depth < 2) subfolders.push(prefix ? `${prefix}/${e.name}` : e.name);
+    }
+    for (let i = 0; i < subfolders.length; i += 20) {
+      await Promise.all(subfolders.slice(i, i + 20).map((f) => walk(f, depth + 1)));
     }
   };
   await walk("", 0);

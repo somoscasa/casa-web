@@ -95,13 +95,23 @@ export function prevStage(s: string | null | undefined): Stage | null {
   return PIPELINE[i - 1];
 }
 
-/** Formato de fecha corto en español-AR. */
-export function formatDate(d: string | null | undefined): string {
+export const AR_TZ = "America/Argentina/Buenos_Aires";
+
+/** Today as YYYY-MM-DD in Argentina (the server runs in UTC). */
+export function todayAR(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: AR_TZ });
+}
+
+/** Formato de fecha corto en español-AR. Date-only values are calendar days, never shifted by timezone. */
+export function formatDate(d: string | null | undefined, opts?: Intl.DateTimeFormatOptions): string {
   if (!d) return "sin fecha";
-  return new Date(d).toLocaleDateString("es-AR", {
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(d);
+  return new Date(dateOnly ? `${d}T12:00:00Z` : d).toLocaleDateString("es-AR", {
     day: "numeric",
     month: "short",
     year: "numeric",
+    ...opts,
+    timeZone: dateOnly ? "UTC" : AR_TZ,
   });
 }
 
@@ -111,8 +121,32 @@ export function nextEventDate(
 ): string | null {
   const valid = dates.filter((d): d is string => Boolean(d));
   if (valid.length === 0) return null;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayAR();
   const upcoming = valid.filter((d) => d >= today).sort();
   if (upcoming.length > 0) return upcoming[0];
   return valid.sort().reverse()[0];
+}
+
+export const EVENT_TYPES = ["boda", "quince", "cumpleanos", "evento"] as const;
+export type EventType = (typeof EVENT_TYPES)[number];
+
+export const EVENT_TYPE_LABEL: Record<EventType, string> = {
+  boda: "Boda",
+  quince: "Quince",
+  cumpleanos: "Cumpleaños",
+  evento: "Evento social",
+};
+
+/** Free-text type from forms ("Boda", "Cumpleaños", "Otro"...) to a stored value. */
+export function normalizeEventType(raw: string | null | undefined): EventType | null {
+  const t = (raw ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
+  if (!t) return null;
+  if (t.startsWith("boda") || t.includes("casamiento")) return "boda";
+  if (t.includes("quince") || t === "15" || t === "xv") return "quince";
+  if (t.startsWith("cumple")) return "cumpleanos";
+  return "evento";
+}
+
+export function eventTypeLabel(t: string | null | undefined): string {
+  return (t && EVENT_TYPE_LABEL[t as EventType]) || "Evento";
 }

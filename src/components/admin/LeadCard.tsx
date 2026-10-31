@@ -9,7 +9,7 @@ import {
   STAGE_LABEL,
   normalizeStage,
   formatDate,
-  packageName,
+  packageName, eventTypeLabel
 } from "@/lib/crm";
 
 export type Lead = {
@@ -25,11 +25,7 @@ export type Lead = {
   paid: boolean;
 };
 
-function typeLabel(t: string | null): string {
-  if (!t) return "Evento";
-  if (t === "boda") return "Boda";
-  return t.charAt(0).toUpperCase() + t.slice(1);
-}
+const typeLabel = eventTypeLabel;
 
 export default function LeadCard({ lead }: { lead: Lead }) {
   const router = useRouter();
