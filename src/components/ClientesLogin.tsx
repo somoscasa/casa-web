@@ -36,6 +36,10 @@ export default function ClientesLogin() {
         );
         return;
       }
+      if (res.status === 429) {
+        fail("Demasiados intentos. Esperá 15 minutos y probá de nuevo, o escribinos.");
+        return;
+      }
       if (res.status === 404) {
         fail("Ese código no existe o ya no está activo.");
         return;

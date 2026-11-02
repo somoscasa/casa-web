@@ -13,7 +13,9 @@ export default function ContactForm() {
     tipo: "",
     fecha: "",
     msg: "",
+    website: "",
   });
+  const [startedAt] = useState(() => Date.now());
   const [errors, setErrors] = useState<Errors>({});
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -39,8 +41,12 @@ export default function ContactForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(f),
+        body: JSON.stringify({ ...f, startedAt }),
       });
+      if (res.status === 429) {
+        setErrors({ form: "Ya recibimos varias consultas tuyas. Esperá un rato o escribinos por WhatsApp." });
+        return;
+      }
       if (!res.ok) throw new Error("send_failed");
       setSent(true);
     } catch {
@@ -68,6 +74,16 @@ export default function ContactForm() {
 
   return (
     <form className="cf" onSubmit={submit} noValidate>
+      <input
+        type="text"
+        name="website"
+        value={f.website}
+        onChange={(e) => set("website")(e.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
+      />
       <div className="label cf-eyebrow">Consultas 2026 · 2027</div>
 
       <label className="cf-field">

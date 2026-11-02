@@ -3,6 +3,7 @@ import {
   getServiceSupabase,
   supabaseConfigured,
 } from "@/lib/supabase/server";
+import { isLimited, recordHit, visitorKey } from "@/lib/rate-limit";
 import { createPreference, mercadopagoConfigured } from "@/lib/mercadopago";
 import { PACKAGES } from "@/lib/site";
 
@@ -23,6 +24,15 @@ const DEPOSIT = Number(process.env.NEXT_PUBLIC_DEPOSIT_AMOUNT ?? "0");
 export async function POST(req: Request) {
   if (!mercadopagoConfigured() || !supabaseConfigured() || DEPOSIT <= 0) {
     return NextResponse.json({ error: "not_configured" }, { status: 503 });
+  }
+
+  {
+    const svc = getServiceSupabase();
+    const key = visitorKey(req.headers);
+    if (await isLimited(svc, "contact", key)) {
+      return NextResponse.json({ error: "too_many" }, { status: 429 });
+    }
+    await recordHit(svc, "contact", key);
   }
 
   const data = (await req.json()) as Payload;

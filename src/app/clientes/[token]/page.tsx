@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { isLimited, recordHit, visitorKey } from "@/lib/rate-limit";
 import { getServiceSupabase, supabaseConfigured, batchSignedUrls } from "@/lib/supabase/server";
 import { fetchAllPhotos, galleryIsOpen, thumbPath } from "@/lib/gallery-data";
 import ClientGallery, {
@@ -27,6 +29,21 @@ export default async function ClientGalleryPage(props: { params: Promise<Params>
   }
 
   const svc = getServiceSupabase();
+  const key = visitorKey(await headers());
+  if (await isLimited(svc, "code", key)) {
+    return (
+      <main id="main" className="cl-login">
+        <div className="cl-card">
+          <div className="wordmark cl-card-mark">CASA</div>
+          <h1 className="serif cl-card-title">Esperá unos minutos</h1>
+          <p className="cl-card-sub">
+            Hubo demasiados intentos con códigos incorrectos. Probá de nuevo en 15 minutos o
+            escribinos y te mandamos el link de tu galería.
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   const { data: rawGallery } = await svc
     .from("galleries")
@@ -51,7 +68,11 @@ export default async function ClientGalleryPage(props: { params: Promise<Params>
     collections: { id: string; name: string; sort_order: number }[];
   } | null;
 
-  if (!gallery || !galleryIsOpen(gallery)) notFound();
+  if (!gallery) {
+    await recordHit(svc, "code", key);
+    notFound();
+  }
+  if (!galleryIsOpen(gallery)) notFound();
 
   const sorted = await fetchAllPhotos(svc, gallery.id);
 

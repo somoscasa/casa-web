@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServiceSupabase, supabaseConfigured } from "@/lib/supabase/server";
 import { notionConfigured, syncEventsToNotion } from "@/lib/notion";
+import { pruneRateEvents } from "@/lib/rate-limit";
 
 // No cachear: cada corrida del cron debe pegarle de verdad a la base.
 export const dynamic = "force-dynamic";
@@ -36,6 +37,8 @@ export async function GET(req: Request) {
         { status: 500 },
       );
     }
+
+    await pruneRateEvents(supabase).catch(() => {});
 
     // Sync diario CASA → Notion (best-effort: nunca hace fallar el keep-alive).
     let notion: unknown;

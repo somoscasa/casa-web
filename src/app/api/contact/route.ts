@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { supabaseConfigured } from "@/lib/supabase/server";
+import { getServiceSupabase, supabaseConfigured } from "@/lib/supabase/server";
+import { isLimited, recordHit, visitorKey } from "@/lib/rate-limit";
 import { createLead } from "@/lib/leads";
 
 type Payload = {
@@ -9,6 +10,8 @@ type Payload = {
   tipo?: string;
   fecha?: string;
   msg?: string;
+  website?: string;
+  startedAt?: number;
 };
 
 const TO = process.env.NEXT_PUBLIC_EMAIL ?? "somoscasa.ar@gmail.com";
@@ -21,11 +24,25 @@ function escape(s: string) {
 }
 
 export async function POST(req: Request) {
-  const data = (await req.json()) as Payload;
+  const data = ((await req.json().catch(() => ({}))) ?? {}) as Payload;
+
+  // Bots fill the hidden "website" field or submit instantly; answer OK so they move on.
+  if (data.website || (typeof data.startedAt === "number" && Date.now() - data.startedAt < 3000)) {
+    return NextResponse.json({ ok: true });
+  }
   const { nombre = "", email = "", tel = "", tipo = "", fecha = "", msg = "" } = data;
 
   if (!nombre.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || !tipo) {
     return NextResponse.json({ error: "invalid_payload" }, { status: 400 });
+  }
+
+  if (supabaseConfigured()) {
+    const svc = getServiceSupabase();
+    const key = visitorKey(req.headers);
+    if (await isLimited(svc, "contact", key)) {
+      return NextResponse.json({ error: "too_many" }, { status: 429 });
+    }
+    await recordHit(svc, "contact", key);
   }
 
   // Persistir la consulta en el embudo (best-effort: nunca rompe el envío).
